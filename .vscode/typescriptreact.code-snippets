@@ -1,0 +1,19 @@
+{
+  "Create Page": {
+    "scope": "typescriptreact",
+    "prefix": "comp",
+    "body": [
+      "import React from 'react';",
+      "//import styles from './styles.scss';",
+      "",
+      "export const $1 = () => {",
+      "  return (",
+      "   <div>",
+      "     $1",
+      "   </div>",
+      " );",
+      "};"
+    ],
+    "description": "Create a base page with styles imported"
+  }
+}
