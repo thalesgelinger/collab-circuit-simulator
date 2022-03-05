@@ -1,17 +1,9 @@
-import { signInWithGoogle } from "./services/firebase";
+import { Router } from "./routes";
+
+import "./globals.scss";
 
 const App = () => {
-  const onGooglePress = async () => {
-    const user = await signInWithGoogle();
-    console.log({ user });
-  };
-
-  return (
-    <>
-      <h1>Collab Circuit Simulator</h1>
-      <button onClick={onGooglePress}>Login com google</button>
-    </>
-  );
+  return <Router />;
 };
 
 export default App;
