@@ -1,0 +1,9 @@
+.container {
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  z-index: 2;
+  &:hover {
+    opacity: 0.6;
+  }
+}
