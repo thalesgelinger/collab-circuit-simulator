@@ -1,4 +1,4 @@
-import { Button, Input } from "../../ components";
+import { Button, Input } from "../../components";
 import { signInWithGoogle } from "../../services/firebase";
 import { SocialButton } from "./components/SocialButton";
 

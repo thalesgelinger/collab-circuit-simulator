@@ -1,5 +1,5 @@
-import { Button } from "../../../../ components";
-import { ButtonProps } from "../../../../ components/Button";
+import { Button } from "../../../../components";
+import { ButtonProps } from "../../../../components/Button";
 
 export const SocialButton = ({ children, ...rest }: ButtonProps) => (
   <Button
