@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { KonvaEventObject } from "konva/lib/Node";
+import { Component, useEffect, useState } from "react";
 import { Ellipse, Layer, Stage, Text } from "react-konva";
 import { ComponentType } from "../../@types";
 import { ActionsToolbar, DraggableComponent } from "../../components";
@@ -13,8 +14,17 @@ export const Workspace = () => {
   }, [circuit]);
 
   const handleReleseComponent = (component: ComponentType) => {
-    console.log({ componentDropped: component });
     setCircuit([component, ...circuit]);
+  };
+
+  const handleDragEnd = (index: number) => {
+    return (component: ComponentType) => {
+      setCircuit((circuit) => {
+        const circuitCopy = [...circuit];
+        circuitCopy[index] = component;
+        return circuitCopy;
+      });
+    };
   };
 
   return (
@@ -24,16 +34,13 @@ export const Workspace = () => {
         <Layer>
           {circuit.map((element, i) => {
             return (
-              <Ellipse
+              <DraggableComponent
                 key={i}
-                stroke="black"
-                strokeWidth={1.5}
-                radiusX={20}
-                radiusY={20}
-                draggable
+                size={20}
                 x={element.position.x}
                 y={element.position.y}
-                onDragEnd={console.log}
+                onDragEnd={handleDragEnd(i)}
+                backToOrigin={false}
               />
             );
           })}

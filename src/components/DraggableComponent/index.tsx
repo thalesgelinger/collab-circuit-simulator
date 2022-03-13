@@ -7,6 +7,7 @@ interface DraggableComponentProps extends KonvaNodeComponent<any, any> {
   size: number;
   x: number;
   y: number;
+  backToOrigin: boolean;
   onDragEnd: (event: ComponentType) => void;
 }
 
@@ -15,15 +16,12 @@ export const DraggableComponent = ({
   x,
   y,
   onDragEnd,
+  backToOrigin = true,
   ...rest
 }: DraggableComponentProps) => {
   const ref = useRef(null);
 
   const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
-    console.log({
-      xDropped: event.target.x(),
-      yDropped: event.target.x(),
-    });
     const dataToSend = {
       position: {
         x: event.target.x(),
@@ -31,27 +29,27 @@ export const DraggableComponent = ({
       },
     } as ComponentType;
     onDragEnd(dataToSend);
-    ref?.current?.position({
-      x,
-      y,
-    });
-    console.log({
-      xDroppedAfter: event.target.x(),
-      yDroppedAfter: event.target.x(),
-    });
+    if (backToOrigin) {
+      ref?.current?.position({
+        x,
+        y,
+      });
+    }
   };
 
   return (
     <>
-      <Ellipse
-        ref={ref}
-        radiusX={size}
-        radiusY={size}
-        stroke="black"
-        strokeWidth={1.5}
-        x={x}
-        y={y}
-      />
+      {backToOrigin && (
+        <Ellipse
+          ref={ref}
+          radiusX={size}
+          radiusY={size}
+          stroke="black"
+          strokeWidth={1.5}
+          x={x}
+          y={y}
+        />
+      )}
       <Ellipse
         ref={ref}
         radiusX={size}
