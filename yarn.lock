@@ -1920,6 +1920,11 @@ jszip@^3.6.0:
     readable-stream "~2.3.6"
     set-immediate-shim "~1.0.1"
 
+konva@^8.3.3:
+  version "8.3.3"
+  resolved "https://registry.yarnpkg.com/konva/-/konva-8.3.3.tgz#409c811a7aa474e075e8928b8a931cf12d4dd517"
+  integrity sha512-S/v9JW3gNr4mweRwk4JLiJSnQAWs3aZBU4SY9pXGgCFxIvSDbKTnXTDYb2IMxFnurh3ItiR249RG0NvozHd1OA==
+
 lie@~3.3.0:
   version "3.3.0"
   resolved "https://registry.npmjs.org/lie/-/lie-3.3.0.tgz"
@@ -2175,6 +2180,23 @@ react-dom@^17.0.2:
   version "17.0.2"
   resolved "https://registry.npmjs.org/react-dom/-/react-dom-17.0.2.tgz"
   integrity sha512-s4h96KtLDUQlsENhMn1ar8t2bEa+q/YAtj8pPPdIjPDGBDIVNsrD9aXNWqspUe6AzKCIG0C1HZZLqLV7qpOBGA==
+  dependencies:
+    loose-envify "^1.1.0"
+    object-assign "^4.1.1"
+    scheduler "^0.20.2"
+
+react-konva@^17.0.2-5:
+  version "17.0.2-5"
+  resolved "https://registry.yarnpkg.com/react-konva/-/react-konva-17.0.2-5.tgz#e70b0acf323402de0a540f27b300fbe7ed151849"
+  integrity sha512-IyzdfqRDK8r1ulp/jbLPX18AuO+n5yNtL0+4T0QEUsgArRqIl/VRCG1imA5mYJBk0cBNC5+fWDHN+HWEW62ZEQ==
+  dependencies:
+    react-reconciler "~0.26.2"
+    scheduler "^0.20.2"
+
+react-reconciler@~0.26.2:
+  version "0.26.2"
+  resolved "https://registry.yarnpkg.com/react-reconciler/-/react-reconciler-0.26.2.tgz#bbad0e2d1309423f76cf3c3309ac6c96e05e9d91"
+  integrity sha512-nK6kgY28HwrMNwDnMui3dvm3rCFjZrcGiuwLc5COUipBK5hWHLOxMJhSnSomirqWwjPBJKV1QcbkI0VJr7Gl1Q==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
@@ -2491,6 +2513,11 @@ unquote@~1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/unquote/-/unquote-1.1.1.tgz#8fded7324ec6e88a0ff8b905e7c098cdc086d544"
   integrity sha1-j97XMk7G6IoP+LkF58CYzcCG1UQ=
+
+use-image@^1.0.10:
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/use-image/-/use-image-1.0.10.tgz#75c338ca228244b9ba54f9ae1a24cfffdd6b2fb8"
+  integrity sha512-Q+YvP9s5OpYNwrbLFyi9L8LX4o+c59rF12tP2ggwf8RC2Jf+xChhuDVjYO3oZfWgSfdM42ilPIOldjOl+pmb+g==
 
 util-deprecate@~1.0.1:
   version "1.0.2"

@@ -4,7 +4,7 @@ import styles from "./styles.module.scss";
 
 const ICON_DEFAULT_SIZE = 40;
 
-export const Toolbar = () => {
+export const ActionsToolbar = () => {
   return (
     <section className={styles.container}>
       <Icon name="play" size={ICON_DEFAULT_SIZE} color={"#black"} />
