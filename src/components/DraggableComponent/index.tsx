@@ -1,14 +1,21 @@
 import { KonvaEventObject } from "konva/lib/Node";
-import { useRef } from "react";
+import {
+  Ellipse as ElipseProps,
+  EllipseConfig,
+} from "konva/lib/shapes/Ellipse";
+import { useEffect, useRef } from "react";
 import { Ellipse, KonvaNodeComponent } from "react-konva";
 import { ComponentType } from "../../@types";
 
-interface DraggableComponentProps extends KonvaNodeComponent<any, any> {
+interface DraggableComponentProps {
   size: number;
   x: number;
   y: number;
   backToOrigin: boolean;
-  onDragEnd: (event: ComponentType) => void;
+  onDragStart?: (event: KonvaEventObject<DragEvent>) => void;
+  onDragMove?: (event: KonvaEventObject<DragEvent>) => void;
+  onDragEnd?: (event: ComponentType) => void;
+  componentData?: ComponentType;
 }
 
 export const DraggableComponent = ({
@@ -16,19 +23,32 @@ export const DraggableComponent = ({
   x,
   y,
   onDragEnd,
+  onDragMove,
+  onDragStart,
   backToOrigin = true,
-  ...rest
+  componentData,
 }: DraggableComponentProps) => {
   const ref = useRef(null);
 
+  useEffect(() => {
+    console.log({ componentData });
+  }, []);
+
   const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
-    const dataToSend = {
+    const newComponent = {
       position: {
-        x: event.target.x(),
-        y: event.target.y(),
+        x: event.currentTarget.x(),
+        y: event.currentTarget.y(),
       },
     } as ComponentType;
-    onDragEnd(dataToSend);
+
+    console.log({
+      componentData,
+      newComponent,
+      selectedComponent: componentData ?? newComponent,
+    });
+
+    onDragEnd(componentData ?? newComponent);
     if (backToOrigin) {
       ref?.current?.position({
         x,
@@ -59,8 +79,9 @@ export const DraggableComponent = ({
         x={x}
         y={y}
         draggable
+        onDragStart={onDragStart}
+        onDragMove={onDragMove}
         onDragEnd={handleDragEnd}
-        {...rest}
       />
     </>
   );

@@ -11,8 +11,14 @@ import {
 } from "konva/lib/shapes/Ellipse";
 import { DraggableComponent } from "../../../components";
 
+export interface DraggableComponentType extends KonvaEventObject<DragEvent> {
+  componentType?: string;
+}
+
 interface ComponentsToolbarProps {
-  onReleaseComponent: (component: ComponentType) => void;
+  onComponentDragStart: (event: DraggableComponentType) => void;
+  onComponentDragMove: (event: DraggableComponentType) => void;
+  onComponentDragEnd: (event: ComponentType) => void;
 }
 
 const ToolbarShape = () => {
@@ -29,7 +35,9 @@ const ToolbarShape = () => {
 };
 
 export const ComponentsToolbar = ({
-  onReleaseComponent,
+  onComponentDragStart,
+  onComponentDragMove,
+  onComponentDragEnd,
 }: ComponentsToolbarProps) => {
   const itemSize = 20;
   const componentsUseful = [...Array(6)].map(() => ({
@@ -46,8 +54,8 @@ export const ComponentsToolbar = ({
   );
 
   const handleComponentDragEnd = (componentType: string) => {
-    return (component: ComponentType) => {
-      onReleaseComponent({
+    return (component: KonvaEventObject<DragEvent>) => {
+      onComponentDragStart({
         ...component,
         componentType,
       });
@@ -63,7 +71,9 @@ export const ComponentsToolbar = ({
           size={itemSize}
           x={horizontalToolbarCenter + i}
           y={toolbarDistanceFromTop + i * componentsYFactor}
-          onDragEnd={handleComponentDragEnd("type")}
+          onDragStart={handleComponentDragEnd("type")}
+          onDragMove={onComponentDragMove}
+          onDragEnd={onComponentDragEnd}
         />
       ))}
     </>
