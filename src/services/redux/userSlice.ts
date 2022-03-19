@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { User } from "firebase/auth";
 
 export const slice = createSlice({
-  name: "batata",
+  name: "user",
   initialState: {
     user: {} as User,
     isLogged: false,

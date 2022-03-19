@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useReducer, useState } from "react";
 import { useDispatch } from "react-redux";
 import {
   getAuth,
@@ -23,7 +23,10 @@ import { changeUser } from "../../services/redux/userSlice";
 export const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [viewPassword, setViewPassword] = useState(false);
+  const [viewPassword, togglePasswordView] = useReducer(
+    (state) => !state,
+    false
+  );
   const [error, setError] = useState(false);
   const auth = getAuth(app);
   const dispatch = useDispatch();
@@ -76,15 +79,12 @@ export const Login = () => {
             placeholder="Senha"
             type={!viewPassword ? "password" : ""}
           />
-          <button
-            onClick={() => setViewPassword(!viewPassword)}
-            className={styles.viewPassword}
-          >
-            {viewPassword ? (
-              <img className={styles.imagePassword} src={Hidden} alt="" />
-            ) : (
-              <img className={styles.imagePassword} src={Eye} alt="" />
-            )}
+          <button onClick={togglePasswordView} className={styles.viewPassword}>
+            <img
+              className={styles.imagePassword}
+              src={viewPassword ? Hidden : Eye}
+              alt=""
+            />
           </button>
         </div>
         <Button
