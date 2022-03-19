@@ -1,5 +1,6 @@
-import { useReducer, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useEffect, useReducer, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   getAuth,
   signInWithEmailAndPassword,
@@ -16,9 +17,9 @@ import {
   FacebookIcon,
   Hidden,
 } from "../../assets/index";
-
-import styles from "./styles.module.scss";
 import { changeUser } from "../../services/redux/userSlice";
+import { RootState } from "../../services/redux/store";
+import styles from "./styles.module.scss";
 
 export const Login = () => {
   const [email, setEmail] = useState("");
@@ -30,6 +31,14 @@ export const Login = () => {
   const [error, setError] = useState(false);
   const auth = getAuth(app);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { isLogged } = useSelector((state: RootState) => state.user);
+
+  useEffect(() => {
+    if (isLogged) {
+      navigate("/dashboard");
+    }
+  }, [isLogged]);
 
   const actionEmailAndPassword = async () => {
     try {
