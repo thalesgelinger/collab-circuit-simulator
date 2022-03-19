@@ -29,6 +29,7 @@ export const ActionsToolbar = ({ onActionChange }: ActionsToolbarProps) => {
         size={ICON_DEFAULT_SIZE}
         color={"#black"}
         onClick={handleActionsChange("edit")}
+        style={{ opacity: currentAction === "edit" ? 0.5 : 1 }}
       />
       <Icon name="print" size={ICON_DEFAULT_SIZE} color={"#black"} />
       <Icon name="share" size={ICON_DEFAULT_SIZE} color={"#black"} />
