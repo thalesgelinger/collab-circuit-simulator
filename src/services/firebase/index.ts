@@ -1,1 +1,0 @@
-export { signInWithGoogle } from "./signMethods";

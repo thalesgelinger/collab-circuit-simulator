@@ -1,7 +1,5 @@
 import { initializeApp } from "firebase/app";
 
-import { getAuth } from "firebase/auth";
-
 const {
   VITE_API_KEY,
   VITE_AUTH_DOMAIN,
@@ -20,5 +18,6 @@ const firebaseConfig = {
   appId: VITE_APP_ID,
 };
 
-export const app = initializeApp(firebaseConfig);
-export const auth = getAuth();
+const app = initializeApp(firebaseConfig);
+
+export default app;
