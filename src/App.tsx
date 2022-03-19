@@ -1,5 +1,9 @@
+import { Router } from "./routes";
+
+import "./globals.scss";
+
 const App = () => {
-  return <h1>Collab Circuit Simulator</h1>;
+  return <Router />;
 };
 
 export default App;
