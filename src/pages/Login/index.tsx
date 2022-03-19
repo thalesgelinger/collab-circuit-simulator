@@ -7,7 +7,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
-import { Button, Input } from "../../ components";
+import { Button, Input } from "../../components";
 import app from "../../services/firebase";
 import {
   Alert,

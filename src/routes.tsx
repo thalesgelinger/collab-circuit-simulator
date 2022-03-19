@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import { Routes, Route } from "react-router-dom";
-import { Login } from "./pages";
+import { Dashboard, Login, Workspace } from "./pages";
 import { RootState } from "./services/redux/store";
 
 export const Router = () => {
@@ -9,7 +9,9 @@ export const Router = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
+      <Route path="/" element={<Login />} exact />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/workspace" element={<Workspace />} />
     </Routes>
   );
 };

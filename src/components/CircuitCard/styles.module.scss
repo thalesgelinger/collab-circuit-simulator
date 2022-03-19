@@ -1,0 +1,12 @@
+.container {
+  background: linear-gradient(
+    270deg,
+    rgba(116, 116, 116, 0.1647) 0%,
+    rgba(3, 3, 3, 0) 139.38%
+  );
+  border-radius: 16px;
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
