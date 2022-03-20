@@ -11,6 +11,7 @@ import styles from "./styles.module.scss";
 import { CircuitCardType } from "../../@types";
 import { RootState } from "../../services/redux/store";
 import { logout } from "../../services/redux/userSlice";
+import { useAuth } from "../../hooks/useAuth";
 
 export const Dashboard = () => {
   const [myCircuits, setMyCircuits] = useState<CircuitCardType[]>(
@@ -18,7 +19,7 @@ export const Dashboard = () => {
       .fill(1)
       .map((_, i) => ({ img: circuitSample, name: i.toString() }))
   );
-  const user = useSelector((state: RootState) => state.user);
+  const { user } = useAuth();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -26,12 +27,6 @@ export const Dashboard = () => {
     dispatch(logout());
     navigate("/");
   };
-
-  useEffect(() => {
-    if (!user.isLogged) {
-      navigate("/");
-    }
-  }, [user.isLogged]);
 
   return (
     <div className={styles.container}>
