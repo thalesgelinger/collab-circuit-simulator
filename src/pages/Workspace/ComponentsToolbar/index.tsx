@@ -21,13 +21,21 @@ interface ComponentsToolbarProps {
   onComponentDragEnd: (event: ComponentType) => void;
 }
 
+const ITEM_SIZE = 20;
+
+const TOOLBAR_DIMENSIONS = {
+  width: 4 * ITEM_SIZE,
+  height: window.innerHeight * 0.8,
+  marginTop: window.innerHeight * 0.1,
+};
+
 const ToolbarShape = () => {
   return (
     <Rect
-      x={window.innerWidth - 80}
-      y={80}
-      width={100}
-      height={528}
+      x={window.innerWidth - TOOLBAR_DIMENSIONS.width}
+      y={TOOLBAR_DIMENSIONS.marginTop}
+      width={window.innerWidth}
+      height={TOOLBAR_DIMENSIONS.height}
       fill="rgba(116, 116, 116, 0.1647)"
       cornerRadius={16}
     />
@@ -45,12 +53,11 @@ export const ComponentsToolbar = ({
   }));
   const [draggableComponents, setDraggableComponents] =
     useState(componentsUseful);
-  const horizontalToolbarCenter = window.innerWidth - 40;
-  const marginTop = 40;
-  const toolbarDistanceFromTop = 80 + marginTop;
-  const toolbarSize = 528;
+  const horizontalToolbarCenter = window.innerWidth - itemSize * 3;
+
+  const toolbarDistanceFromTop = TOOLBAR_DIMENSIONS.marginTop + itemSize;
   const componentsYFactor = Math.floor(
-    toolbarSize / draggableComponents.length
+    TOOLBAR_DIMENSIONS.height / draggableComponents.length
   );
 
   const handleComponentDragEnd = (componentType: string) => {

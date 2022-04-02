@@ -1,38 +1,44 @@
 import { KonvaEventObject } from "konva/lib/Node";
-import {
-  Ellipse as ElipseProps,
-  EllipseConfig,
-} from "konva/lib/shapes/Ellipse";
 import { useEffect, useRef } from "react";
-import { Ellipse, KonvaNodeComponent } from "react-konva";
+import { Image } from "react-konva";
 import { ComponentType } from "../../@types";
+import useImage from "use-image";
 
 interface DraggableComponentProps {
   size: number;
   x: number;
   y: number;
-  backToOrigin: boolean;
+  backToOrigin?: boolean;
   onDragStart?: (event: KonvaEventObject<DragEvent>) => void;
   onDragMove?: (event: KonvaEventObject<DragEvent>) => void;
   onDragEnd?: (event: ComponentType) => void;
   componentData?: ComponentType;
 }
 
-export const DraggableComponent = ({
-  size,
-  x,
-  y,
-  onDragEnd,
-  onDragMove,
-  onDragStart,
-  backToOrigin = true,
-  componentData,
-}: DraggableComponentProps) => {
+export const DraggableComponent = (props: DraggableComponentProps) => {
+  const {
+    size,
+    x: originX,
+    y: originY,
+    onDragEnd,
+    onDragMove,
+    onDragStart,
+    backToOrigin = true,
+    componentData,
+  } = props;
+
   const ref = useRef(null);
+
+  const x = originX;
+  const y = originY;
 
   useEffect(() => {
     console.log({ componentData });
   }, []);
+
+  const [image] = useImage(
+    "https://firebasestorage.googleapis.com/v0/b/collab-circuit-simulator.appspot.com/o/components%2Fresistor.png?alt=media&token=06358d60-8076-4975-b787-22ed1d5491a0"
+  );
 
   const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
     const newComponent = {
@@ -49,6 +55,7 @@ export const DraggableComponent = ({
     });
 
     onDragEnd(componentData ?? newComponent);
+
     if (backToOrigin) {
       ref?.current?.position({
         x,
@@ -60,22 +67,13 @@ export const DraggableComponent = ({
   return (
     <>
       {backToOrigin && (
-        <Ellipse
-          ref={ref}
-          radiusX={size}
-          radiusY={size}
-          stroke="black"
-          strokeWidth={1.5}
-          x={x}
-          y={y}
-        />
+        <Image image={image} height={size * 2} width={size * 2} x={x} y={y} />
       )}
-      <Ellipse
+      <Image
+        image={image}
         ref={ref}
-        radiusX={size}
-        radiusY={size}
-        stroke="black"
-        strokeWidth={1.5}
+        height={size * 2}
+        width={size * 2}
         x={x}
         y={y}
         draggable

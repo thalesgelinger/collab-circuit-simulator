@@ -23,7 +23,7 @@ export const Workspace = () => {
 
   const wireRef = useRef<WiresHandle>(null);
 
-  const { user } = useAuth();
+  // const { user } = useAuth();
 
   const handleDragMove = (
     e: KonvaEventObject<DragEvent>,
