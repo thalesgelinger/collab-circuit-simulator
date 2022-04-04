@@ -18,8 +18,8 @@ interface DraggableComponentProps {
 export const DraggableComponent = (props: DraggableComponentProps) => {
   const {
     size,
-    x: originX,
-    y: originY,
+    x,
+    y,
     onDragEnd,
     onDragMove,
     onDragStart,
@@ -29,30 +29,17 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
   const ref = useRef(null);
 
-  const x = originX;
-  const y = originY;
-
-  useEffect(() => {
-    console.log({ componentData });
-  }, []);
-
-  const [image] = useImage(
-    "https://firebasestorage.googleapis.com/v0/b/collab-circuit-simulator.appspot.com/o/components%2Fresistor.png?alt=media&token=06358d60-8076-4975-b787-22ed1d5491a0"
-  );
+  const [image] = useImage(componentData!.image);
 
   const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
-    const newComponent = {
-      position: {
-        x: event.currentTarget.x(),
-        y: event.currentTarget.y(),
-      },
-    } as ComponentType;
+    const position = {
+      x: event.currentTarget.x(),
+      y: event.currentTarget.y(),
+    };
 
-    console.log({
-      componentData,
-      newComponent,
-      selectedComponent: componentData ?? newComponent,
-    });
+    const newComponent = {
+      position,
+    } as ComponentType;
 
     onDragEnd(componentData ?? newComponent);
 

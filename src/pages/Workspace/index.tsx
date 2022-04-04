@@ -1,4 +1,4 @@
-import { ElementRef, useRef, useState } from "react";
+import { ElementRef, useEffect, useRef, useState } from "react";
 import { Layer, Stage } from "react-konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { Vector2d } from "konva/lib/types";
@@ -25,11 +25,16 @@ export const Workspace = () => {
 
   // const { user } = useAuth();
 
+  useEffect(() => {
+    console.log({ circuit });
+  }, [circuit]);
+
   const handleDragMove = (
     e: KonvaEventObject<DragEvent>,
     component = {} as ComponentType
   ) => {
     const componentId = component?.id ?? circuit.length;
+
     e.currentTarget.moveToTop();
 
     const snapedPosition = snapPosition(
@@ -39,17 +44,12 @@ export const Workspace = () => {
 
     e.currentTarget.position(snapedPosition);
 
-    const newComponent = {
-      id: componentId,
-      position: snapedPosition,
-    } as ComponentType;
-
     setCircuit((circuit) => {
       const circuitCopy = [...circuit];
       const indexOfComponent = circuit.findIndex(
         ({ id }) => id === componentId
       );
-      circuitCopy[indexOfComponent] = newComponent;
+      circuitCopy[indexOfComponent].position = snapedPosition;
       return circuitCopy;
     });
   };
@@ -61,6 +61,7 @@ export const Workspace = () => {
         y: event.target.y(),
       },
       id: circuit.length + 1,
+      image: event.image,
     } as ComponentType;
     setCircuit([component, ...circuit]);
   };

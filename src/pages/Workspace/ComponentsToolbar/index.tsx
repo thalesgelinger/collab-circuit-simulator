@@ -11,9 +11,7 @@ import {
 } from "konva/lib/shapes/Ellipse";
 import { DraggableComponent } from "../../../components";
 
-export interface DraggableComponentType extends KonvaEventObject<DragEvent> {
-  componentType?: string;
-}
+type DraggableComponentType = KonvaEventObject<DragEvent> & ComponentType;
 
 interface ComponentsToolbarProps {
   onComponentDragStart: (event: DraggableComponentType) => void;
@@ -48,9 +46,25 @@ export const ComponentsToolbar = ({
   onComponentDragEnd,
 }: ComponentsToolbarProps) => {
   const itemSize = 20;
-  const componentsUseful = [...Array(6)].map(() => ({
-    type: "circle",
-  }));
+
+  const componentsUseful: ComponentType[] = [
+    {
+      componentType: "resistor",
+      image:
+        "https://firebasestorage.googleapis.com/v0/b/collab-circuit-simulator.appspot.com/o/components%2Fresistor.png?alt=media&token=06358d60-8076-4975-b787-22ed1d5491a0",
+    } as ComponentType,
+    {
+      componentType: "resistor",
+      image:
+        "https://firebasestorage.googleapis.com/v0/b/collab-circuit-simulator.appspot.com/o/components%2Fresistor.png?alt=media&token=06358d60-8076-4975-b787-22ed1d5491a0",
+    } as ComponentType,
+    {
+      componentType: "resistor",
+      image:
+        "https://firebasestorage.googleapis.com/v0/b/collab-circuit-simulator.appspot.com/o/components%2Fresistor.png?alt=media&token=06358d60-8076-4975-b787-22ed1d5491a0",
+    } as ComponentType,
+  ];
+
   const [draggableComponents, setDraggableComponents] =
     useState(componentsUseful);
   const horizontalToolbarCenter = window.innerWidth - itemSize * 3;
@@ -60,11 +74,19 @@ export const ComponentsToolbar = ({
     TOOLBAR_DIMENSIONS.height / draggableComponents.length
   );
 
-  const handleComponentDragEnd = (componentType: string) => {
-    return (component: KonvaEventObject<DragEvent>) => {
+  const handleComponentDragEnd = (component: ComponentType) => {
+    return (event: KonvaEventObject<DragEvent>) => {
       onComponentDragStart({
         ...component,
-        componentType,
+        ...event,
+      });
+    };
+  };
+  const handleComponentDragMove = (component: ComponentType) => {
+    return (event: KonvaEventObject<DragEvent>) => {
+      onComponentDragMove({
+        ...component,
+        ...event,
       });
     };
   };
@@ -72,14 +94,15 @@ export const ComponentsToolbar = ({
   return (
     <>
       <ToolbarShape />
-      {draggableComponents.map(({ type }, i) => (
+      {draggableComponents.map((component, i) => (
         <DraggableComponent
+          componentData={component}
           key={i}
           size={itemSize}
           x={horizontalToolbarCenter + i}
           y={toolbarDistanceFromTop + i * componentsYFactor}
-          onDragStart={handleComponentDragEnd("type")}
-          onDragMove={onComponentDragMove}
+          onDragStart={handleComponentDragEnd(component)}
+          onDragMove={handleComponentDragMove(component)}
           onDragEnd={onComponentDragEnd}
         />
       ))}
