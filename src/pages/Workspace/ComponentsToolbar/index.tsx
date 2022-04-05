@@ -11,7 +11,8 @@ import {
 } from "konva/lib/shapes/Ellipse";
 import { DraggableComponent } from "../../../components";
 
-type DraggableComponentType = KonvaEventObject<DragEvent> & ComponentType;
+export type DraggableComponentType = KonvaEventObject<DragEvent> &
+  ComponentType;
 
 interface ComponentsToolbarProps {
   onComponentDragStart: (event: DraggableComponentType) => void;

@@ -1,5 +1,5 @@
 import { KonvaEventObject } from "konva/lib/Node";
-import { useEffect, useRef } from "react";
+import { ElementRef, useEffect, useRef } from "react";
 import { Image } from "react-konva";
 import { ComponentType } from "../../@types";
 import useImage from "use-image";
@@ -27,7 +27,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
     componentData,
   } = props;
 
-  const ref = useRef(null);
+  const ref = useRef<ElementRef<typeof Image>>();
 
   const [image] = useImage(componentData!.image);
 
@@ -41,7 +41,9 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
       position,
     } as ComponentType;
 
-    onDragEnd(componentData ?? newComponent);
+    if (!!onDragEnd) {
+      onDragEnd(componentData ?? newComponent);
+    }
 
     if (backToOrigin) {
       ref?.current?.position({

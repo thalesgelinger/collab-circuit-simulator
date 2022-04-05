@@ -64,7 +64,7 @@ export const Wires = forwardRef<WiresHandle, WiresProps>((props, ref) => {
     return points.every((point) => point?.x && point?.y);
   };
 
-  const buildPoints = (...nodes: Vector2d[]) => {
+  const buildPoints = (...nodes: Vector2d[] | any[]) => {
     const points = nodes
       .filter((node) => node?.x && node?.y)
       .map((node) => [node.x, node.y])

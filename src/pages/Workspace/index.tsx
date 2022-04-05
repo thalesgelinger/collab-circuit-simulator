@@ -4,7 +4,7 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { Vector2d } from "konva/lib/types";
 import { ComponentType } from "../../@types";
 import { ActionsToolbar } from "../../components";
-import { ComponentsToolbar } from "./ComponentsToolbar";
+import { ComponentsToolbar, DraggableComponentType } from "./ComponentsToolbar";
 import styles from "./styles.module.scss";
 import { Grid } from "./Grid";
 import { useSnapToGrid } from "../../hooks";
@@ -73,7 +73,7 @@ export const Workspace = () => {
     });
   };
 
-  const handleDragStart = (event) => {
+  const handleDragStart = (event: DraggableComponentType) => {
     const component = {
       position: {
         x: event.target.x(),
