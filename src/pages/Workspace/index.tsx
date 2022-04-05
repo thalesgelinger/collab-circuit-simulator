@@ -4,13 +4,15 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { Vector2d } from "konva/lib/types";
 import { ComponentType } from "../../@types";
 import { ActionsToolbar } from "../../components";
-import { ComponentsToolbar, DraggableComponentType } from "./ComponentsToolbar";
+import { ComponentsToolbar } from "./ComponentsToolbar";
 import styles from "./styles.module.scss";
 import { Grid } from "./Grid";
 import { useSnapToGrid } from "../../hooks";
 import { Wire, Wires } from "./Wires";
 import { Circuit } from "./Circuit";
 import { useAuth } from "../../hooks/useAuth";
+import { app } from "../../services/firebase";
+import { getDatabase, onValue, ref, set } from "firebase/database";
 
 type WiresHandle = ElementRef<typeof Wires>;
 
@@ -26,8 +28,25 @@ export const Workspace = () => {
   // const { user } = useAuth();
 
   useEffect(() => {
-    console.log({ circuit });
+    if (circuit.length) {
+      console.log({ circuit });
+      const db = getDatabase();
+      set(ref(db, "circuits"), { circuit });
+    }
   }, [circuit]);
+
+  useEffect(() => {
+    console.log({ wire: wireRef.current?.wire });
+  }, [wireRef.current?.wire]);
+
+  useEffect(() => {
+    const db = getDatabase(app);
+    const starCountRef = ref(db, "circuits");
+    onValue(starCountRef, (snapshot) => {
+      const { circuit } = snapshot.val();
+      setCircuit(circuit);
+    });
+  }, []);
 
   const handleDragMove = (
     e: KonvaEventObject<DragEvent>,
@@ -54,7 +73,7 @@ export const Workspace = () => {
     });
   };
 
-  const handleDragStart = (event: DraggableComponentType) => {
+  const handleDragStart = (event) => {
     const component = {
       position: {
         x: event.target.x(),

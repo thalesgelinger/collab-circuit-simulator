@@ -4,6 +4,7 @@ import {
   forwardRef,
   ForwardRefRenderFunction,
   SetStateAction,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useState,
@@ -38,6 +39,10 @@ export const Wires = forwardRef<WiresHandle, WiresProps>((props, ref) => {
     setWires,
     points,
   }));
+
+  useEffect(() => {
+    console.log({ wire });
+  }, [wire]);
 
   const getCurvePoint = (from: Vector2d, to: Vector2d) => {
     if (!hasPoints(from, to)) {

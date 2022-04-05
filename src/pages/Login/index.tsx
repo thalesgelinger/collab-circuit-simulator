@@ -9,7 +9,7 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { Button, Input } from "../../components";
-import app from "../../services/firebase";
+import { app } from "../../services/firebase";
 import {
   Alert,
   Eye,
