@@ -27,7 +27,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
     componentData,
   } = props;
 
-  const ref = useRef<ElementRef<typeof Image>>();
+  const ref = useRef<any>();
 
   const [image] = useImage(componentData!.image);
 
