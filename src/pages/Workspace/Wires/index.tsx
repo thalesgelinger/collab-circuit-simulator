@@ -44,6 +44,14 @@ export const Wires = forwardRef<WiresHandle, WiresProps>((props, ref) => {
     console.log({ wire });
   }, [wire]);
 
+  useEffect(() => {
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        setWire({} as Wire);
+      }
+    });
+  }, []);
+
   const getCurvePoint = (from: Vector2d, to: Vector2d) => {
     if (!hasPoints(from, to)) {
       return;

@@ -14,6 +14,14 @@ export const ActionsToolbar = ({ onActionChange }: ActionsToolbarProps) => {
   const [currentAction, setCurrentAction] = useState<ActionTypes>("");
 
   useEffect(() => {
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        setCurrentAction("");
+      }
+    });
+  }, []);
+
+  useEffect(() => {
     onActionChange(currentAction);
   }, [currentAction]);
 
