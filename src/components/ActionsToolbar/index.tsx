@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Simulation } from "../../models/Simulation";
 import { Icon } from "../Icon";
 
 import styles from "./styles.module.scss";
@@ -38,16 +39,50 @@ export const ActionsToolbar = ({ onActionChange }: ActionsToolbarProps) => {
         size={ICON_DEFAULT_SIZE}
         color={"#black"}
         onClick={async () => {
-          const netlist = `Basic circuit
-            R1 1 2 100
-            R2 2 3 100
-            R3 3 0 100
-            V 1 0 5
-            .op
-            .end`;
+          const circuit = [
+            {
+              type: "source",
+              ref: "V1",
+              value: "5",
+              nodes: {
+                positive: "1",
+                negative: "0",
+              },
+            },
+            {
+              type: "resistor",
+              ref: "R1",
+              value: "100",
+              nodes: {
+                positive: "1",
+                negative: "2",
+              },
+            },
+            {
+              type: "resistor",
+              ref: "R2",
+              value: "100",
+              nodes: {
+                positive: "2",
+                negative: "3",
+              },
+            },
+            {
+              type: "resistor",
+              ref: "R3",
+              value: "100",
+              nodes: {
+                positive: "3",
+                negative: "0",
+              },
+            },
+          ];
 
-          const netlistResult = await window.runSpice(netlist);
-          console.log({ netlistResult });
+          const simulation = new Simulation();
+          await simulation.start(circuit);
+          const netlistResult = simulation.getData();
+          const nodes = simulation.getVoltageNodes();
+          console.log({ netlistResult, nodes });
         }}
       />
       <Icon
