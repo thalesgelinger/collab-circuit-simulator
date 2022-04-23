@@ -4203,8 +4203,9 @@ dependenciesFulfilled = function runCaller() {
   if (!calledRun) dependenciesFulfilled = runCaller;
 };
 function callMain(args) {
+  console.log("chamou o main");
   var entryFunction = Module["_main"];
-  args = args || [];
+  args = ["-b", "test.cir"];
   var argc = args.length + 1;
   var argv = stackAlloc((argc + 1) * 4);
   HEAP32[argv >> 2] = allocateUTF8OnStack(thisProgram);
@@ -4222,7 +4223,7 @@ function callMain(args) {
     calledMain = true;
   }
 }
-function run(args) {
+var run = (args) => {
   args = args || arguments_;
   if (runDependencies > 0) {
     return;
@@ -4231,6 +4232,7 @@ function run(args) {
   if (runDependencies > 0) {
     return;
   }
+
   function doRun() {
     if (calledRun) return;
     calledRun = true;
@@ -4242,18 +4244,8 @@ function run(args) {
     if (shouldRunNow) callMain(args);
     postRun();
   }
-  if (Module["setStatus"]) {
-    Module["setStatus"]("Running...");
-    setTimeout(function () {
-      setTimeout(function () {
-        Module["setStatus"]("");
-      }, 1);
-      doRun();
-    }, 1);
-  } else {
-    doRun();
-  }
-}
+  doRun()
+};
 Module["run"] = run;
 function exit(status, implicit) {
   EXITSTATUS = status;
@@ -4280,4 +4272,4 @@ if (Module["preInit"]) {
 }
 var shouldRunNow = true;
 if (Module["noInitialRun"]) shouldRunNow = false;
-run();
+run()

@@ -315,6 +315,13 @@
     "@babel/plugin-syntax-jsx" "^7.16.7"
     "@babel/types" "^7.16.7"
 
+"@babel/runtime@7.2.0":
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.2.0.tgz#b03e42eeddf5898e00646e4c840fa07ba8dcad7f"
+  integrity sha512-oouEibCbHMVdZSDlJBO6bZmID/zA/G/Qx3H1d3rSNPTD+L8UNKvCat7aKWSJ74zYbm5zWGh0GQN0hKj8zYFTCg==
+  dependencies:
+    regenerator-runtime "^0.12.0"
+
 "@babel/runtime@^7.15.4", "@babel/runtime@^7.9.2":
   version "7.17.8"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.17.8.tgz#3e56e4aff81befa55ac3ac6a0967349fd1c5bca2"
@@ -1084,6 +1091,13 @@ argparse@^1.0.7:
   integrity sha512-o5Roy6tNG4SL/FOkCAN6RzjiakZS25RLYFrcMttJqbdd8BWrnA+fGz57iN5Pb06pvBGvl5gQ0B48dJlslXvoTg==
   dependencies:
     sprintf-js "~1.0.2"
+
+as-bind@^0.8.2:
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/as-bind/-/as-bind-0.8.2.tgz#2ab20105e7394800b532fa3879cf57bbaed8378c"
+  integrity sha512-Y7WTopfRLODzLLpTgyrf6TMeEbcckF8u7r/eU68PeiKh7yY/YzmjCQiPAJw0F70bge+84nUO5j4No7V4fzdoew==
+  dependencies:
+    visitor-as "^0.5.0"
 
 balanced-match@^1.0.0:
   version "1.0.2"
@@ -2048,6 +2062,11 @@ lodash.camelcase@^4.3.0:
   resolved "https://registry.npmjs.org/lodash.camelcase/-/lodash.camelcase-4.3.0.tgz"
   integrity sha1-soqmKIorn8ZRA1x3EfZathkDMaY=
 
+lodash.clonedeep@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
+  integrity sha1-4j8/nE+Pvd6HJSnBBxhXoIblzO8=
+
 long@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/long/-/long-4.0.0.tgz"
@@ -2354,6 +2373,13 @@ react-router@6.2.2:
   dependencies:
     history "^5.2.0"
 
+react-wasm@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/react-wasm/-/react-wasm-1.0.1.tgz#b9b273dc194a9dcc4753d0fb6327de5d191a0ffb"
+  integrity sha512-iynUWb6Uy8jHvdncg94nDBmjBSP2cmSPI2yAlesbh7IyhTUqCdXCcY+1LFEMa9BxzxJby98X9S2Tb4QWeLn3Ag==
+  dependencies:
+    "@babel/runtime" "7.2.0"
+
 react@17.0.2:
   version "17.0.2"
   resolved "https://registry.yarnpkg.com/react/-/react-17.0.2.tgz#d0b5cc516d29eb3eee383f75b62864cfb6800037"
@@ -2393,6 +2419,11 @@ redux@^4.0.0, redux@^4.1.2:
   integrity sha512-SH8PglcebESbd/shgf6mii6EIoRM0zrQyjcuQ+ojmfxjTtE0z9Y8pa62iA/OJ58qjP6j27uyW4kUF4jl/jd6sw==
   dependencies:
     "@babel/runtime" "^7.9.2"
+
+regenerator-runtime@^0.12.0:
+  version "0.12.1"
+  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.12.1.tgz#fa1a71544764c036f8c49b13a08b2594c9f8a0de"
+  integrity sha512-odxIc1/vDlo4iZcfXqRYFj0vpXFNoGdKMAUieAlFYO6m/nl5e9KR/beGf41z4a1FI+aQgtjhuaSlDxQ0hmkrHg==
 
 regenerator-runtime@^0.13.4:
   version "0.13.9"
@@ -2638,6 +2669,11 @@ tr46@~0.0.3:
   resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha1-gYT9NH2snNwYWZLzpmIuFLnZq2o=
 
+ts-mixer@^5.1.0:
+  version "5.4.1"
+  resolved "https://registry.yarnpkg.com/ts-mixer/-/ts-mixer-5.4.1.tgz#b90db9ced48531aa17ce9184a2890d1e3c99b1e5"
+  integrity sha512-Zo9HgPCtNouDgJ+LGtrzVOjSg8+7WGQktIKLwAfaNrlOK1mWGlz1ejsAF/YqUEqAGjUTeB5fEg8gH9Aui6w9xA==
+
 tslib@^2.1.0:
   version "2.3.1"
   resolved "https://registry.npmjs.org/tslib/-/tslib-2.3.1.tgz"
@@ -2682,6 +2718,14 @@ util.promisify@~1.0.0:
     es-abstract "^1.17.2"
     has-symbols "^1.0.1"
     object.getownpropertydescriptors "^2.1.0"
+
+visitor-as@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/visitor-as/-/visitor-as-0.5.0.tgz#c0911c028df3a31218c9091ffdae172b507d536b"
+  integrity sha512-U2P13pa7BAnfj6IEbP4feS1Rci6NT4GlDcwpqkk90u7LGalc5jH9aMuWnxTC8RJJ92iZzDQ8Lea5/OnLDsgzlw==
+  dependencies:
+    lodash.clonedeep "^4.5.0"
+    ts-mixer "^5.1.0"
 
 vite-plugin-react-svg@^0.2.0:
   version "0.2.0"

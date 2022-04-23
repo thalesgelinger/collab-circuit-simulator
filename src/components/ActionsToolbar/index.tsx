@@ -3,6 +3,8 @@ import { Icon } from "../Icon";
 
 import styles from "./styles.module.scss";
 
+// import { runSpice } from "../../wasm/runner.js";
+
 const ICON_DEFAULT_SIZE = 40;
 
 type ActionTypes = "edit" | "";
@@ -31,7 +33,23 @@ export const ActionsToolbar = ({ onActionChange }: ActionsToolbarProps) => {
 
   return (
     <section className={styles.container}>
-      <Icon name="play" size={ICON_DEFAULT_SIZE} color={"#black"} />
+      <Icon
+        name="play"
+        size={ICON_DEFAULT_SIZE}
+        color={"#black"}
+        onClick={async () => {
+          const netlist = `Basic circuit
+            R1 1 2 100
+            R2 2 3 100
+            R3 3 0 100
+            V 1 0 5
+            .op
+            .end`;
+
+          const netlistResult = await window.runSpice(netlist);
+          console.log({ netlistResult });
+        }}
+      />
       <Icon
         name="edit"
         size={ICON_DEFAULT_SIZE}
