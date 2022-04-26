@@ -1,14 +1,6 @@
-interface ComponentType {
-  type: string;
-  ref: string;
-  value: string;
-  nodes: {
-    positive: string;
-    negative: string;
-  };
-}
+import { ComponentType } from "../@types";
 
-type CircuitType = ComponentType[];
+export type CircuitType = ComponentType[];
 
 export class Simulation {
   #resultData: string[] = [];
@@ -26,8 +18,8 @@ export class Simulation {
   #circuitTypeToNetlist(circuit: CircuitType) {
     const netlist = circuit
       .map((component) => {
-        const { ref, value, nodes } = component;
-        return [ref, nodes.positive, nodes.negative, value].join(" ");
+        const { name, value, nodes } = component;
+        return [name, nodes.positive, nodes.negative, value].join(" ");
       })
       .join("\n")
       .concat("\n.op\n.end");
@@ -35,6 +27,8 @@ export class Simulation {
   }
 
   getVoltageNodes() {
+    const NODES_HEADER_SIZE = 3;
+
     const indexNodeVoltageStart = this.#resultData.findIndex((value) => {
       return value.startsWith("Node") || value.endsWith("Voltage");
     });
@@ -42,8 +36,6 @@ export class Simulation {
     const resultStartsOnNode = this.#resultData.slice(indexNodeVoltageStart);
 
     const indexNodeVoltaEnd = resultStartsOnNode.findIndex((value) => !value);
-
-    const NODES_HEADER_SIZE = 3;
 
     const onlyNodes = resultStartsOnNode
       .splice(NODES_HEADER_SIZE, indexNodeVoltaEnd - NODES_HEADER_SIZE)

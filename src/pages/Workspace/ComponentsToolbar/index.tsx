@@ -53,16 +53,19 @@ export const ComponentsToolbar = ({
       componentType: "resistor",
       image:
         "https://firebasestorage.googleapis.com/v0/b/collab-circuit-simulator.appspot.com/o/components%2Fresistor.png?alt=media&token=06358d60-8076-4975-b787-22ed1d5491a0",
+      value: "100",
     } as ComponentType,
     {
-      componentType: "resistor",
+      componentType: "dc_source",
       image:
         "https://firebasestorage.googleapis.com/v0/b/collab-circuit-simulator.appspot.com/o/components%2Fcc.png?alt=media&token=9d55d4a3-011c-4613-8a85-62dcf0162a62",
+      value: "5",
     } as ComponentType,
     {
       componentType: "resistor",
       image:
         "https://firebasestorage.googleapis.com/v0/b/collab-circuit-simulator.appspot.com/o/components%2Fresistor.png?alt=media&token=06358d60-8076-4975-b787-22ed1d5491a0",
+      value: "100",
     } as ComponentType,
   ];
 

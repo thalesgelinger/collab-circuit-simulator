@@ -10,13 +10,16 @@ import {
   useState,
 } from "react";
 import { Line } from "react-konva";
+import { ComponentType } from "../../../@types";
 
 export interface Wire {
   from: Vector2d;
   to: Vector2d;
 }
 
-interface WiresProps {}
+interface WiresProps {
+  onWireUpdate: (wire: Wire) => void;
+}
 
 interface WiresHandle {
   wire: Wire;
@@ -24,85 +27,89 @@ interface WiresHandle {
   wires: number[][];
   setWires: Dispatch<SetStateAction<number[][]>>;
   points: number[];
+  isConnectingComponents: boolean;
 }
 
-export const Wires = forwardRef<WiresHandle, WiresProps>((props, ref) => {
-  const [wire, setWire] = useState<Wire>({} as Wire);
-  const [wires, setWires] = useState<number[][]>([]);
+export const Wires = forwardRef<WiresHandle, WiresProps>(
+  ({ onWireUpdate }, ref) => {
+    const [wire, setWire] = useState<Wire>({} as Wire);
+    const [wires, setWires] = useState<number[][]>([]);
 
-  const isConnectingComponents = !!wire?.from;
+    const isConnectingComponents = !!wire?.from;
 
-  useImperativeHandle(ref, () => ({
-    wire,
-    setWire,
-    wires,
-    setWires,
-    points,
-  }));
+    useImperativeHandle(ref, () => ({
+      wire,
+      setWire,
+      wires,
+      setWires,
+      points,
+      isConnectingComponents,
+    }));
 
-  useEffect(() => {
-    console.log({ wire });
-  }, [wire]);
+    useEffect(() => {
+      onWireUpdate(wire);
+    }, [wire]);
 
-  useEffect(() => {
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        setWire({} as Wire);
+    useEffect(() => {
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          setWire({} as Wire);
+        }
+      });
+    }, []);
+
+    const getCurvePoint = (from: Vector2d, to: Vector2d) => {
+      if (!hasPoints(from, to)) {
+        return;
       }
-    });
-  }, []);
 
-  const getCurvePoint = (from: Vector2d, to: Vector2d) => {
-    if (!hasPoints(from, to)) {
-      return;
-    }
+      const dx = Math.abs(from.x - to.x);
+      const dy = Math.abs(from.y - to.y);
 
-    const dx = Math.abs(from.x - to.x);
-    const dy = Math.abs(from.y - to.y);
+      const x = dx > dy ? Math.min(from.x, to.x) : Math.max(from.x, to.x);
+      const y = x === from.x ? to.y : from.y;
 
-    const x = dx > dy ? Math.min(from.x, to.x) : Math.max(from.x, to.x);
-    const y = x === from.x ? to.y : from.y;
+      const curve = { x, y };
 
-    const curve = { x, y };
+      return curve;
+    };
 
-    return curve;
-  };
+    const hasPoints = (...points: Vector2d[]) => {
+      return points.every((point) => point?.x && point?.y);
+    };
 
-  const hasPoints = (...points: Vector2d[]) => {
-    return points.every((point) => point?.x && point?.y);
-  };
+    const buildPoints = (...nodes: Vector2d[] | any[]) => {
+      const points = nodes
+        .filter((node) => node?.x && node?.y)
+        .map((node) => [node.x, node.y])
+        .flat();
+      return points;
+    };
 
-  const buildPoints = (...nodes: Vector2d[] | any[]) => {
-    const points = nodes
-      .filter((node) => node?.x && node?.y)
-      .map((node) => [node.x, node.y])
-      .flat();
-    return points;
-  };
+    const points = useMemo(() => {
+      const { from, to } = wire;
+      const curve = getCurvePoint(from, to);
+      const points = buildPoints(from, curve, to);
+      return points;
+    }, [wire]);
 
-  const points = useMemo(() => {
-    const { from, to } = wire;
-    const curve = getCurvePoint(from, to);
-    const points = buildPoints(from, curve, to);
-    return points;
-  }, [wire]);
-
-  return (
-    <>
-      {wires.map((wirePoints, index) => {
-        return (
-          <Line
-            key={index}
-            points={wirePoints}
-            stroke="#000"
-            fill="#000"
-            strokeWidth={3}
-          />
-        );
-      })}
-      {isConnectingComponents && (
-        <Line points={points} stroke="#000" fill="#000" strokeWidth={3} />
-      )}
-    </>
-  );
-});
+    return (
+      <>
+        {wires.map((wirePoints, index) => {
+          return (
+            <Line
+              key={index}
+              points={wirePoints}
+              stroke="#000"
+              fill="#000"
+              strokeWidth={3}
+            />
+          );
+        })}
+        {isConnectingComponents && (
+          <Line points={points} stroke="#000" fill="#000" strokeWidth={3} />
+        )}
+      </>
+    );
+  }
+);

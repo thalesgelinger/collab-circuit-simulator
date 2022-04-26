@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ComponentType } from "../../@types";
 import { Simulation } from "../../models/Simulation";
 import { Icon } from "../Icon";
 
@@ -11,9 +12,13 @@ const ICON_DEFAULT_SIZE = 40;
 type ActionTypes = "edit" | "";
 interface ActionsToolbarProps {
   onActionChange: (actionType: ActionTypes) => void;
+  circuit: CircuitType;
 }
 
-export const ActionsToolbar = ({ onActionChange }: ActionsToolbarProps) => {
+export const ActionsToolbar = ({
+  onActionChange,
+  circuit,
+}: ActionsToolbarProps) => {
   const [currentAction, setCurrentAction] = useState<ActionTypes>("");
 
   useEffect(() => {
@@ -39,45 +44,7 @@ export const ActionsToolbar = ({ onActionChange }: ActionsToolbarProps) => {
         size={ICON_DEFAULT_SIZE}
         color={"#black"}
         onClick={async () => {
-          const circuit = [
-            {
-              type: "source",
-              ref: "V1",
-              value: "5",
-              nodes: {
-                positive: "1",
-                negative: "0",
-              },
-            },
-            {
-              type: "resistor",
-              ref: "R1",
-              value: "100",
-              nodes: {
-                positive: "1",
-                negative: "2",
-              },
-            },
-            {
-              type: "resistor",
-              ref: "R2",
-              value: "100",
-              nodes: {
-                positive: "2",
-                negative: "3",
-              },
-            },
-            {
-              type: "resistor",
-              ref: "R3",
-              value: "100",
-              nodes: {
-                positive: "3",
-                negative: "0",
-              },
-            },
-          ];
-
+          console.log({ circuit });
           const simulation = new Simulation();
           await simulation.start(circuit);
           const netlistResult = simulation.getData();
