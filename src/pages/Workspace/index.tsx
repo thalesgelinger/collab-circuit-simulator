@@ -14,6 +14,8 @@ import { useAuth } from "../../hooks/useAuth";
 import { app } from "../../services/firebase";
 import { getDatabase, onValue, ref, set } from "firebase/database";
 import { Position } from "../../@types/ComponentType";
+import { Tools } from "./Tools";
+import { Toolbar } from "./Toolbar";
 
 type WiresHandle = ElementRef<typeof Wires>;
 
@@ -23,6 +25,7 @@ export const Workspace = () => {
   const snapPosition = useSnapToGrid(blockSnapSize);
 
   const [currentAction, setCurrentAction] = useState("");
+  const [showTools, setShowTools] = useState(false);
 
   const wireRef = useRef<WiresHandle>(null);
 
@@ -382,13 +385,24 @@ export const Workspace = () => {
             onComponentDroped={handleDragRelease}
           />
           <Wires ref={wireRef} onWireUpdate={() => {}} />
-          <ComponentsToolbar
-            onComponentDragStart={handleDragStart}
-            onComponentDragMove={handleDragMove}
-            onComponentDragEnd={handleDragRelease}
-          />
         </Layer>
+
+        <Toolbar
+          onComponentDragStart={handleDragStart}
+          onComponentDragMove={handleDragMove}
+          onComponentDragEnd={handleDragRelease}
+          showTools={showTools}
+        />
       </Stage>
+
+      <div className={styles.toolsSelector}>
+        <button onClick={() => setShowTools(true)} disabled={showTools}>
+          tools
+        </button>
+        <button onClick={() => setShowTools(false)} disabled={!showTools}>
+          components
+        </button>
+      </div>
     </div>
   );
 };
