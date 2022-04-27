@@ -30,13 +30,12 @@ export const Workspace = () => {
 
   // const { user } = useAuth();
 
-  useEffect(() => {
-    if (circuit.length) {
-      console.log({ circuit });
-      const db = getDatabase();
-      set(ref(db, "circuits"), { circuit });
-    }
-  }, [circuit]);
+  // useEffect(() => {
+  //   if (circuit.length) {
+  //     const db = getDatabase();
+  //     set(ref(db, "circuits"), { circuit });
+  //   }
+  // }, [circuit]);
 
   useEffect(() => {
     const db = getDatabase(app);
@@ -124,47 +123,15 @@ export const Workspace = () => {
       return;
     }
 
-    const { wire, wires, setWire, setWires, points } =
-      wireRef.current as WiresHandle;
+    const { wire, wires, setWire, setWires, points } = wireRef.current!;
 
     if (!wire?.from) {
-      //runs on start
-      const { x, y } = getPointerPositionByEvent(evt);
-      const from = snapPosition(x, y);
-      const newWire = { from } as Wire;
-      setWire(newWire);
+      createWire(evt);
       return;
     }
 
     if (wireHasConnectedToComponent(wire)) {
-      //runs on end
-      const componentConnectedFrom = findComponentByWirePosition(wire.from);
-      const componentConnectedTo = findComponentByWirePosition(wire.to);
-
-      const { isNegative, isPositive } = findTerminalConnected(
-        componentConnectedTo.position,
-        wire.to
-      );
-
-      const connectedNode = isPositive ? "positive" : "negative";
-
-      if (!!componentConnectedTo?.nodes?.[connectedNode]) {
-        console.log("FOI NO IF");
-        addConnectionBetweenComponents(
-          componentConnectedFrom,
-          componentConnectedTo,
-          wire
-        );
-      } else {
-        console.log("FOI NO ELSE");
-        addConnectionBetweenComponents(
-          componentConnectedTo,
-          componentConnectedFrom,
-          wire
-        );
-      }
-
-      setNodes(nodes + 1);
+      setWireNodeToEndComponent(wire);
       setWire({} as Wire);
       setWires([...wires, points]);
       return;
@@ -178,45 +145,160 @@ export const Workspace = () => {
     setWire({ from: wire.to } as Wire);
   };
 
-  const addConnectionBetweenComponents = (
-    componentFrom: ComponentType,
-    componentTo: ComponentType,
-    wire: Wire
+  const createWire = (evt: KonvaEventObject<MouseEvent>) => {
+    const { x, y } = getPointerPositionByEvent(evt);
+    const from = snapPosition(x, y);
+    const newWire = { from } as Wire;
+
+    const { setWire, wires } = wireRef.current!;
+
+    setWire(newWire);
+
+    const component = findComponentByWirePosition(from);
+
+    console.log({ component });
+
+    if (!component) {
+      return;
+    }
+
+    setWireNodeToComponent(from, component);
+  };
+
+  const setWireNodeToComponent = (
+    wirePoint: Position,
+    component: ComponentType
   ) => {
-    const componentToWithNode = addNodeToComponent(componentTo, wire.to)!;
+    const terminal = findTerminalConnectedToWire(component, wirePoint);
 
-    const { isPositive } = findTerminalConnected(
-      componentToWithNode.position,
-      wire.to
-    );
+    if (!terminal) {
+      return;
+    }
 
-    const nodeConnectedToWireTo = isPositive
-      ? componentToWithNode.nodes.positive
-      : componentToWithNode.nodes.negative;
+    if (!!component?.nodes?.[terminal]) {
+      return;
+    }
 
-    const { isNegative } = findTerminalConnected(
-      componentFrom.position,
-      wire.from
-    );
+    updateComponentTerminalNode({
+      component,
+      terminal,
+      node: nodes.toString(),
+    });
 
-    const nodeConnectedFrom = isNegative ? "negative" : "positive";
+    setNodes(nodes + 1);
+  };
 
-    componentFrom = {
-      ...componentFrom,
-      nodes: {
-        ...componentFrom.nodes,
-        [nodeConnectedFrom]: nodeConnectedToWireTo,
-      },
-    };
+  const findTerminalConnectedToWire = (
+    { position }: ComponentType,
+    wirePoint: Position
+  ) => {
+    const isNegative = position?.x === wirePoint.x;
+    const isPositive = position?.x + blockSnapSize * 2 === wirePoint.x;
+    if (isPositive) {
+      return "positive";
+    } else if (isNegative) {
+      return "negative";
+    } else {
+      return;
+    }
+  };
 
+  const updateComponentTerminalNode = ({
+    component,
+    terminal,
+    node,
+  }: {
+    component: ComponentType;
+    terminal: "negative" | "positive";
+    node: string;
+  }) => {
     setCircuit((circuit) => {
       const circuitCopy = [...circuit];
       const indexOfComponent = circuit.findIndex(
-        ({ id }) => id === componentFrom.id
+        ({ id }) => id === component.id
       );
-      circuitCopy[indexOfComponent] = componentFrom;
+      circuitCopy[indexOfComponent] = {
+        ...circuitCopy[indexOfComponent],
+        nodes: {
+          ...circuitCopy[indexOfComponent]?.nodes,
+          [terminal]: node,
+        },
+      };
+      console.log(component.name, circuitCopy[indexOfComponent].nodes);
       return circuitCopy;
     });
+  };
+
+  const setWireNodeToEndComponent = (wire: Wire) => {
+    const [endComponent, endTerminalConnected] =
+      findComponentAndTerminalConnectedByWire(wire.to);
+
+    const [initialComponent, initialTerminalConnected] =
+      findComponentAndTerminalConnectedByWire(wire.from);
+
+    if (!initialComponent && !initialTerminalConnected) {
+      const wires = wireRef.current!.wires;
+
+      const isCurrentWirePosition = (
+        point: number,
+        i: number,
+        arr: number[]
+      ) => {
+        return point === wire.from.x && arr[i + 1] === wire.from.y;
+      };
+
+      const previousWireIndex = wires.findIndex((line) => {
+        return line.some(isCurrentWirePosition);
+      });
+
+      const previousWireFromX = wires[previousWireIndex].findIndex(
+        isCurrentWirePosition
+      );
+
+      const previousWireFromY = previousWireFromX + 1;
+
+      setWireNodeToEndComponent({
+        ...wire,
+        from: {
+          x: wires[previousWireIndex][previousWireFromX - 2],
+          y: wires[previousWireIndex][previousWireFromY - 2],
+        },
+      });
+    }
+
+    const hasTerminal = !!endComponent?.nodes?.[endTerminalConnected];
+
+    if (!initialComponent) {
+      return;
+    }
+
+    if (!hasTerminal) {
+      console.log("CONECTOU NO END");
+      updateComponentTerminalNode({
+        component: endComponent!,
+        terminal: endTerminalConnected!,
+        node: initialComponent!.nodes[initialTerminalConnected!],
+      });
+      return;
+    } else {
+      console.log("CONECTOU NO START");
+      updateComponentTerminalNode({
+        component: initialComponent!,
+        terminal: initialTerminalConnected!,
+        node: endComponent!.nodes[initialTerminalConnected!],
+      });
+      setNodes(nodes - 1);
+      return;
+    }
+  };
+
+  const findComponentAndTerminalConnectedByWire = (wirePosition: Position) => {
+    const component = findComponentByWirePosition(wirePosition);
+    if (!component) {
+      return [undefined, undefined];
+    }
+    const terminal = findTerminalConnectedToWire(component, wirePosition);
+    return [component, terminal] as const;
   };
 
   const wireHasConnectedToComponent = (wire: Wire) => {
@@ -231,48 +313,6 @@ export const Workspace = () => {
       return arrivedX && arrivedY;
     });
     return hasArrived;
-  };
-
-  const addNodeToComponent = (component: ComponentType, wirePos: Position) => {
-    if (!component) {
-      return;
-    }
-
-    component.nodes = getNegativeAndPositiveNodes(component, wirePos);
-
-    setCircuit((circuit) => {
-      const circuitCopy = [...circuit];
-      const indexOfComponent = circuit.findIndex(
-        ({ id }) => id === component.id
-      );
-      circuitCopy[indexOfComponent] = component;
-      return circuitCopy;
-    });
-    return component;
-  };
-
-  const getNegativeAndPositiveNodes = (
-    component: ComponentType,
-    wirePos: Position
-  ) => {
-    const { isNegative, isPositive } = findTerminalConnected(
-      component.position,
-      wirePos
-    );
-
-    const negative = !!component?.nodes?.negative
-      ? component?.nodes?.negative
-      : isNegative
-      ? nodes.toString()
-      : "";
-
-    const positive = !!component?.nodes?.positive
-      ? component?.nodes?.positive
-      : isPositive
-      ? nodes.toString()
-      : "";
-
-    return { negative, positive };
   };
 
   const wireConnectedToOtherWire = (wirePosition: Position) => {

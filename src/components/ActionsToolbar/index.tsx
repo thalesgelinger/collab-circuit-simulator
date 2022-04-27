@@ -12,7 +12,7 @@ const ICON_DEFAULT_SIZE = 40;
 type ActionTypes = "edit" | "";
 interface ActionsToolbarProps {
   onActionChange: (actionType: ActionTypes) => void;
-  circuit: CircuitType;
+  circuit: ComponentType[];
 }
 
 export const ActionsToolbar = ({
@@ -44,7 +44,13 @@ export const ActionsToolbar = ({
         size={ICON_DEFAULT_SIZE}
         color={"#black"}
         onClick={async () => {
-          console.log({ circuit });
+          console.log({
+            circuit: circuit.map((comp) => [
+              comp.name,
+              comp.nodes.positive,
+              comp.nodes.negative,
+            ]),
+          });
           const simulation = new Simulation();
           await simulation.start(circuit);
           const netlistResult = simulation.getData();
