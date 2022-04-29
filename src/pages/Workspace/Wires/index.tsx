@@ -17,9 +17,7 @@ export interface Wire {
   to: Vector2d;
 }
 
-interface WiresProps {
-  onWireUpdate: (wire: Wire) => void;
-}
+interface WiresProps {}
 
 interface WiresHandle {
   wire: Wire;
@@ -30,86 +28,80 @@ interface WiresHandle {
   isConnectingComponents: boolean;
 }
 
-export const Wires = forwardRef<WiresHandle, WiresProps>(
-  ({ onWireUpdate }, ref) => {
-    const [wire, setWire] = useState<Wire>({} as Wire);
-    const [wires, setWires] = useState<number[][]>([]);
+export const Wires = forwardRef<WiresHandle, WiresProps>((_, ref) => {
+  const [wire, setWire] = useState<Wire>({} as Wire);
+  const [wires, setWires] = useState<number[][]>([]);
 
-    const isConnectingComponents = !!wire?.from;
+  const isConnectingComponents = !!wire?.from;
 
-    useImperativeHandle(ref, () => ({
-      wire,
-      setWire,
-      wires,
-      setWires,
-      points,
-      isConnectingComponents,
-    }));
+  useImperativeHandle(ref, () => ({
+    wire,
+    setWire,
+    wires,
+    setWires,
+    points,
+    isConnectingComponents,
+  }));
 
-    useEffect(() => {
-      onWireUpdate(wire);
-    }, [wire]);
-
-    useEffect(() => {
-      document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
-          setWire({} as Wire);
-        }
-      });
-    }, []);
-
-    const getCurvePoint = (from: Vector2d, to: Vector2d) => {
-      if (!hasPoints(from, to)) {
-        return;
+  useEffect(() => {
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        setWire({} as Wire);
       }
+    });
+  }, []);
 
-      const dx = Math.abs(from.x - to.x);
-      const dy = Math.abs(from.y - to.y);
+  const getCurvePoint = (from: Vector2d, to: Vector2d) => {
+    if (!hasPoints(from, to)) {
+      return;
+    }
 
-      const x = dx > dy ? Math.min(from.x, to.x) : Math.max(from.x, to.x);
-      const y = x === from.x ? to.y : from.y;
+    const dx = Math.abs(from.x - to.x);
+    const dy = Math.abs(from.y - to.y);
 
-      const curve = { x, y };
+    const x = dx > dy ? Math.min(from.x, to.x) : Math.max(from.x, to.x);
+    const y = x === from.x ? to.y : from.y;
 
-      return curve;
-    };
+    const curve = { x, y };
 
-    const hasPoints = (...points: Vector2d[]) => {
-      return points.every((point) => point?.x && point?.y);
-    };
+    return curve;
+  };
 
-    const buildPoints = (...nodes: Vector2d[] | any[]) => {
-      const points = nodes
-        .filter((node) => node?.x && node?.y)
-        .map((node) => [node.x, node.y])
-        .flat();
-      return points;
-    };
+  const hasPoints = (...points: Vector2d[]) => {
+    return points.every((point) => point?.x && point?.y);
+  };
 
-    const points = useMemo(() => {
-      const { from, to } = wire;
-      const curve = getCurvePoint(from, to);
-      const points = buildPoints(from, curve, to);
-      return points;
-    }, [wire]);
+  const buildPoints = (...nodes: Vector2d[] | any[]) => {
+    const points = nodes
+      .filter((node) => node?.x && node?.y)
+      .map((node) => [node.x, node.y])
+      .flat();
+    return points;
+  };
 
-    return (
-      <>
-        {wires.map((wirePoints, index) => {
-          return (
-            <Line
-              key={index}
-              points={wirePoints}
-              stroke="#000"
-              fill="#000"
-              strokeWidth={3}
-            />
-          );
-        })}
-        {isConnectingComponents && (
-          <Line points={points} stroke="#000" fill="#000" strokeWidth={3} />
-        )}
-      </>
-    );
-  }
-);
+  const points = useMemo(() => {
+    const { from, to } = wire;
+    const curve = getCurvePoint(from, to);
+    const points = buildPoints(from, curve, to);
+    return points;
+  }, [wire]);
+
+  return (
+    <>
+      {wires.map((wirePoints, index) => {
+        return (
+          <Line
+            key={index}
+            points={wirePoints}
+            stroke="#000"
+            fill="#000"
+            strokeWidth={3}
+          />
+        );
+      })}
+      {isConnectingComponents && (
+        <Line points={points} stroke="#000" fill="#000" strokeWidth={3} />
+      )}
+    </>
+  );
+});

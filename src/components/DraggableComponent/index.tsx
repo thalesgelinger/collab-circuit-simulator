@@ -1,8 +1,9 @@
 import { KonvaEventObject } from "konva/lib/Node";
 import { ElementRef, useEffect, useRef } from "react";
-import { Image } from "react-konva";
+import { Image, Text } from "react-konva";
 import { ComponentType } from "../../@types";
 import useImage from "use-image";
+import { Html } from "react-konva-utils";
 
 interface DraggableComponentProps {
   size: number;
@@ -53,6 +54,8 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
     }
   };
 
+  const editComponentLabel = () => {};
+
   return (
     <>
       {backToOrigin && (
@@ -70,6 +73,29 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
         onDragMove={onDragMove}
         onDragEnd={handleDragEnd}
       />
+      {componentData?.name && (
+        <Text
+          text={componentData?.name}
+          x={x}
+          y={y - 5}
+          fontSize={14}
+          onDblClick={editComponentLabel}
+        />
+      )}
+
+      {componentData?.name && (
+        <Html
+          divProps={{
+            style: {
+              position: "absolute",
+              top: 10,
+              left: 10,
+            },
+          }}
+        >
+          <input type="text" />
+        </Html>
+      )}
     </>
   );
 };

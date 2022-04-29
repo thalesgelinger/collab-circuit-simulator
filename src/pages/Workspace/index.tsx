@@ -1,4 +1,4 @@
-import { ElementRef, useEffect, useRef, useState } from "react";
+import { ElementRef, useCallback, useEffect, useRef, useState } from "react";
 import { Layer, Stage } from "react-konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { Vector2d } from "konva/lib/types";
@@ -41,6 +41,10 @@ export const Workspace = () => {
   // }, [circuit]);
 
   useEffect(() => {
+    console.log({ circuit });
+  }, [circuit]);
+
+  useEffect(() => {
     const db = getDatabase(app);
     const starCountRef = ref(db, "circuits");
     onValue(starCountRef, (snapshot) => {
@@ -49,30 +53,34 @@ export const Workspace = () => {
     });
   }, []);
 
-  const handleDragMove = (
-    e: KonvaEventObject<DragEvent>,
-    component = {} as ComponentType
-  ) => {
-    const componentId = component?.id ?? circuit.length;
+  const handleDragMove = useCallback(
+    (e: KonvaEventObject<DragEvent>, component = {} as ComponentType) => {
+      const componentId = component?.id ?? circuit.length;
 
-    e.currentTarget.moveToTop();
+      e.currentTarget.moveToTop();
 
-    const snapedPosition = snapPosition(
-      e.currentTarget.x(),
-      e.currentTarget.y()
-    );
-
-    e.currentTarget.position(snapedPosition);
-
-    setCircuit((circuit) => {
-      const circuitCopy = [...circuit];
-      const indexOfComponent = circuit.findIndex(
-        ({ id }) => id === componentId
+      const snapedPosition = snapPosition(
+        e.currentTarget.x(),
+        e.currentTarget.y()
       );
-      circuitCopy[indexOfComponent].position = snapedPosition;
-      return circuitCopy;
-    });
-  };
+
+      e.currentTarget.position(snapedPosition);
+
+      const componentIndex = circuit.findIndex(({ id }) => id === componentId);
+
+      if (componentIndex < 0) {
+        return;
+      }
+
+      setCircuit((circuit) => {
+        const circuitCopy = [...circuit];
+        console.log({ componentIndex });
+        circuitCopy[componentIndex].position = snapedPosition;
+        return circuitCopy;
+      });
+    },
+    [circuit]
+  );
 
   const handleDragStart = (event: DraggableComponentType) => {
     const component = {
@@ -86,6 +94,7 @@ export const Workspace = () => {
       value: event.value,
       name: getComponentNameByType(event.componentType),
     } as ComponentType;
+    console.log({ component });
     setCircuit([component, ...circuit]);
   };
 
@@ -384,7 +393,7 @@ export const Workspace = () => {
             onComponentMoving={handleDragMove}
             onComponentDroped={handleDragRelease}
           />
-          <Wires ref={wireRef} onWireUpdate={() => {}} />
+          <Wires ref={wireRef} />
         </Layer>
 
         <Toolbar
