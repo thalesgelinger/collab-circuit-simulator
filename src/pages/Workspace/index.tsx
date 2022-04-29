@@ -16,6 +16,8 @@ import { getDatabase, onValue, ref, set } from "firebase/database";
 import { Position } from "../../@types/ComponentType";
 import { Tools } from "./Tools";
 import { Toolbar } from "./Toolbar";
+import { Provider } from "react-redux";
+import { store } from "../../services/redux/store";
 
 type WiresHandle = ElementRef<typeof Wires>;
 
@@ -102,6 +104,7 @@ export const Workspace = () => {
     const types = {
       resistor: "R",
       dc_source: "V",
+      voltimeter: "VOLTMETER_",
     } as { [key: string]: string };
 
     const numberOfThisComponentTypeInCircuit =
@@ -129,9 +132,11 @@ export const Workspace = () => {
   };
 
   const handleStageClick = (evt: KonvaEventObject<MouseEvent>) => {
-    const isDrawEnable = currentAction !== "edit" && !wireRef?.current;
+    const isDrawEnable = currentAction === "edit" && !!wireRef?.current;
 
-    if (isDrawEnable) {
+    console.log({ isDrawEnable, currentAction });
+
+    if (!isDrawEnable) {
       return;
     }
 
@@ -162,7 +167,7 @@ export const Workspace = () => {
     const from = snapPosition(x, y);
     const newWire = { from } as Wire;
 
-    const { setWire, wires } = wireRef.current!;
+    const { setWire } = wireRef.current!;
 
     setWire(newWire);
 
@@ -384,24 +389,26 @@ export const Workspace = () => {
         onClick={handleStageClick}
         onMouseMove={handleStageMouseMove}
       >
-        <Layer>
-          <Grid blockSnapSize={blockSnapSize} />
-        </Layer>
-        <Layer>
-          <Circuit
-            components={circuit}
-            onComponentMoving={handleDragMove}
-            onComponentDroped={handleDragRelease}
-          />
-          <Wires ref={wireRef} />
-        </Layer>
+        <Provider store={store}>
+          <Layer>
+            <Grid blockSnapSize={blockSnapSize} />
+          </Layer>
+          <Layer>
+            <Circuit
+              components={circuit}
+              onComponentMoving={handleDragMove}
+              onComponentDroped={handleDragRelease}
+            />
+            <Wires ref={wireRef} />
+          </Layer>
 
-        <Toolbar
-          onComponentDragStart={handleDragStart}
-          onComponentDragMove={handleDragMove}
-          onComponentDragEnd={handleDragRelease}
-          showTools={showTools}
-        />
+          <Toolbar
+            onComponentDragStart={handleDragStart}
+            onComponentDragMove={handleDragMove}
+            onComponentDragEnd={handleDragRelease}
+            showTools={showTools}
+          />
+        </Provider>
       </Stage>
 
       <div className={styles.toolsSelector}>

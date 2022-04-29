@@ -1,11 +1,12 @@
 import { KonvaEventObject } from "konva/lib/Node";
+import { ToolsTypes } from "./ToolsTypes";
 
 export interface Position {
   x: number;
   y: number;
 }
 
-type ComponentsKeys = keyof ComponentsTypes;
+type ComponentsKeys = keyof ComponentsTypes | keyof ToolsTypes;
 interface ComponentsTypes {
   resistor: ResistorNodes;
   transistor: TransistorNodes;

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import { ComponentType } from "../../@types";
 import { Simulation } from "../../models/Simulation";
+import { addCircuit } from "../../services/redux/simulationSlice";
 import { Icon } from "../Icon";
 
 import styles from "./styles.module.scss";
@@ -20,6 +22,8 @@ export const ActionsToolbar = ({
   circuit,
 }: ActionsToolbarProps) => {
   const [currentAction, setCurrentAction] = useState<ActionTypes>("");
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     document.addEventListener("keydown", (event) => {
@@ -51,11 +55,7 @@ export const ActionsToolbar = ({
               comp.nodes.negative,
             ]),
           });
-          const simulation = new Simulation();
-          await simulation.start(circuit);
-          const netlistResult = simulation.getData();
-          const nodes = simulation.getVoltageNodes();
-          console.log({ netlistResult, nodes });
+          dispatch(addCircuit(circuit));
         }}
       />
       <Icon

@@ -1,18 +1,24 @@
+import { ToolsTypes } from "./../@types/ToolsTypes";
 import { ComponentType } from "../@types";
 
 export type CircuitType = ComponentType[];
 
 export class Simulation {
   #resultData: string[] = [];
+  #netlist = "";
 
-  async start(circuit: CircuitType) {
-    const netlist = this.#circuitTypeToNetlist(circuit);
-    const netlistResult = await window.runSpice(netlist);
-    this.#resultData = netlistResult;
+  constructor(circuitFull: CircuitType) {
+    const removeTools = ({ componentType }: ComponentType) => {
+      return !["voltimeter"].includes(componentType);
+    };
+    const circuit = circuitFull.filter(removeTools);
+    this.#netlist = this.#circuitTypeToNetlist(circuit);
+    console.log({ netlist: this.#netlist });
   }
 
-  getData() {
-    return this.#resultData;
+  async #run(netlist: string) {
+    const netlistResult = await window.runSpice(netlist);
+    return netlistResult;
   }
 
   #circuitTypeToNetlist(circuit: CircuitType) {
@@ -21,13 +27,14 @@ export class Simulation {
         const { name, value, nodes } = component;
         return [name, nodes.positive, nodes.negative, value].join(" ");
       })
-      .join("\n")
-      .concat("\n.op\n.end");
+      .join("\n");
     return `Circuit \n ${netlist}`;
   }
 
-  getVoltageNodes() {
+  async getVoltageNodes() {
     const NODES_HEADER_SIZE = 3;
+    const netlist = this.#netlist.concat("\n.op\n.end");
+    this.#resultData = await this.#run(netlist);
 
     const indexNodeVoltageStart = this.#resultData.findIndex((value) => {
       return value.startsWith("Node") || value.endsWith("Voltage");
@@ -49,5 +56,9 @@ export class Simulation {
       }, {} as { [key: string]: string });
 
     return voltageNodes;
+  }
+
+  get hasCircuit() {
+    return !!this.#netlist;
   }
 }

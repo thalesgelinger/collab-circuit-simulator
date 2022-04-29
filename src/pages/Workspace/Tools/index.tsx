@@ -56,10 +56,10 @@ export const Tools = ({
       value: "100",
     } as ComponentType,
     {
-      componentType: "dc_source",
+      componentType: "voltimeter",
       image:
-        "https://firebasestorage.googleapis.com/v0/b/collab-circuit-simulator.appspot.com/o/components%2Fcc.png?alt=media&token=9d55d4a3-011c-4613-8a85-62dcf0162a62",
-      value: "5",
+        "https://firebasestorage.googleapis.com/v0/b/collab-circuit-simulator.appspot.com/o/tools%2Fvoltimeter.png?alt=media&token=cae7f05f-3859-4b73-965e-fbf3eecb00ee",
+      value: "0",
     } as ComponentType,
   ];
 
