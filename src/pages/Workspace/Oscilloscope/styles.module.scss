@@ -1,0 +1,34 @@
+.container {
+  position: absolute;
+  bottom: 0;
+  height: 75px;
+  width: 100%;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  
+  >.buttoOsci{
+    display: flex;
+    width: 100%;
+    max-width: 1261px;
+    background: rgba(116, 116, 116, 0.1647) ;
+    border-radius: 10px 16px 0 0;
+   
+    
+    >.buttoZoomOsci{
+      cursor: pointer;
+      display: flex;
+      border: none;
+      margin-left: 10px;
+    }
+
+    >.display{
+      height: 375px;
+      width: 100%;
+      max-width: 1261px;
+      position: absolute;
+      bottom: 75px;
+      background: black;
+    }
+  }
+}

@@ -10,6 +10,7 @@ import { Grid } from "./Grid";
 import { useSnapToGrid } from "../../hooks";
 import { Wire, Wires } from "./Wires";
 import { Circuit } from "./Circuit";
+import { Oscilloscope } from "./Oscilloscope";
 import { useAuth } from "../../hooks/useAuth";
 import { app } from "../../services/firebase";
 import { getDatabase, onValue, ref, set } from "firebase/database";
@@ -183,6 +184,7 @@ export const Workspace = () => {
           />
         </Layer>
       </Stage>
+      <Oscilloscope />
     </div>
   );
 };
