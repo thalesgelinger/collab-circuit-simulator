@@ -11,7 +11,7 @@ import styles from "./styles.module.scss";
 
 const ICON_DEFAULT_SIZE = 40;
 
-type ActionTypes = "edit" | "";
+type ActionTypes = "edit" | "remove";
 interface ActionsToolbarProps {
   onActionChange: (actionType: ActionTypes) => void;
   circuit: ComponentType[];
@@ -67,7 +67,13 @@ export const ActionsToolbar = ({
       />
       <Icon name="print" size={ICON_DEFAULT_SIZE} color={"#black"} />
       <Icon name="share" size={ICON_DEFAULT_SIZE} color={"#black"} />
-      <Icon name="trash" size={ICON_DEFAULT_SIZE} color={"#black"} />
+      <Icon
+        name="trash"
+        size={ICON_DEFAULT_SIZE}
+        color={"#black"}
+        onClick={handleActionsChange("remove")}
+        style={{ opacity: currentAction === "remove" ? 0.5 : 1 }}
+      />
       <Icon name="left-curly-arrow" size={ICON_DEFAULT_SIZE} color={"#black"} />
       <Icon
         name="right-curly-arrow"

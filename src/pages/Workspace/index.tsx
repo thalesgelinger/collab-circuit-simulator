@@ -21,6 +21,10 @@ import { store } from "../../services/redux/store";
 
 type WiresHandle = ElementRef<typeof Wires>;
 
+type ActionsType = {
+  [key: string]: (evt: KonvaEventObject<MouseEvent>) => void;
+};
+
 export const Workspace = () => {
   const [circuit, setCircuit] = useState<ComponentType[]>([]);
   const blockSnapSize = 20;
@@ -132,14 +136,17 @@ export const Workspace = () => {
   };
 
   const handleStageClick = (evt: KonvaEventObject<MouseEvent>) => {
-    const isDrawEnable = currentAction === "edit" && !!wireRef?.current;
+    const actions = {
+      edit,
+      remove,
+    } as ActionsType;
 
-    console.log({ isDrawEnable, currentAction });
-
-    if (!isDrawEnable) {
-      return;
+    if (!!actions?.[currentAction]) {
+      actions[currentAction](evt);
     }
+  };
 
+  const edit = (evt: KonvaEventObject<MouseEvent>) => {
     const { wire, wires, setWire, setWires, points } = wireRef.current!;
 
     if (!wire?.from) {
@@ -160,6 +167,58 @@ export const Workspace = () => {
 
     setWires([...wires, points]);
     setWire({ from: wire.to } as Wire);
+  };
+
+  const remove = (evt: KonvaEventObject<MouseEvent>) => {
+    const clickedPosition = getPointerPositionByEvent(evt);
+
+    removeComponent(clickedPosition);
+    removeWire(clickedPosition);
+  };
+
+  const removeComponent = ({ x, y }: Position) => {
+    const componentClicked = (component: ComponentType) => {
+      const xMax = component.position.x + blockSnapSize * 2;
+      const yMax = component.position.y + blockSnapSize * 2;
+      const validX = x < xMax && component.position.x < x;
+      const validY = y < yMax && component.position.y < y;
+      console.log({
+        validX,
+        validY,
+        positionCOmponent: component.position,
+        x,
+        y,
+        xMax,
+        yMax,
+      });
+      return !(validX && validY);
+    };
+
+    const circuitWithComponentRemoved = circuit.filter(componentClicked);
+
+    console.log({ circuitWithComponentRemoved });
+
+    setCircuit(circuitWithComponentRemoved);
+  };
+
+  const removeWire = (position: Position) => {
+    const { x, y } = snapPosition(position.x, position.y);
+
+    const wires = wireRef.current!.wires;
+
+    const hasClickedIntoWire = (point: number, i: number, arr: number[]) => {
+      return point === x && arr[i + 1] === y;
+    };
+
+    const wireClickedIndex = wires.findIndex((line) => {
+      return line.some(hasClickedIntoWire);
+    });
+
+    const wiresWithoutCLickedWire = wires.filter(
+      (_, i) => i !== wireClickedIndex
+    );
+
+    console.log({ wires, wiresWithoutCLickedWire, x, y, wireClickedIndex });
   };
 
   const createWire = (evt: KonvaEventObject<MouseEvent>) => {

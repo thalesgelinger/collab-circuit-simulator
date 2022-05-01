@@ -50,12 +50,6 @@ export const Tools = ({
 
   const componentsUseful: ComponentType[] = [
     {
-      componentType: "resistor",
-      image:
-        "https://firebasestorage.googleapis.com/v0/b/collab-circuit-simulator.appspot.com/o/components%2Fresistor.png?alt=media&token=06358d60-8076-4975-b787-22ed1d5491a0",
-      value: "100",
-    } as ComponentType,
-    {
       componentType: "voltimeter",
       image:
         "https://firebasestorage.googleapis.com/v0/b/collab-circuit-simulator.appspot.com/o/tools%2Fvoltimeter.png?alt=media&token=cae7f05f-3859-4b73-965e-fbf3eecb00ee",
