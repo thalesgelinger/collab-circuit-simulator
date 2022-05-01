@@ -52,12 +52,12 @@ export const ComponentsToolbar = ({
   const componentsUseful: ComponentType[] = [
     {
       componentType: "resistor",
-      image: components.dc_source,
+      image: components.resistor,
       value: "100",
     } as ComponentType,
     {
       componentType: "dc_source",
-      image: components.resistor,
+      image: components.dc_source,
       value: "5",
     } as ComponentType,
     {

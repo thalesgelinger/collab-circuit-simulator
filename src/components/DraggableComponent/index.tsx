@@ -96,12 +96,12 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
     if (tools.includes(componentData!.componentType)) {
       const nodes = await simulation.getVoltageNodes();
       const measuredKeyPositive = Object.keys(nodes).find((key) =>
-        key.includes(componentData!.nodes.positive)
+        key.includes(componentData!.nodes.positive.value)
       )!;
       const measuredKeyNegative = Object.keys(nodes).find((key) =>
-        key.includes(componentData!.nodes.negative)
+        key.includes(componentData!.nodes.negative.value)
       )!;
-      const measuredValue = !!nodes[measuredKeyNegative]
+      const measuredValue = !!nodes?.[measuredKeyNegative]
         ? nodes[measuredKeyPositive] - nodes[measuredKeyNegative]
         : nodes[measuredKeyPositive];
 

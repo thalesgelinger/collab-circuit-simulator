@@ -252,7 +252,7 @@ export const Workspace = () => {
       return;
     }
 
-    if (!!component?.nodes?.[terminal]) {
+    if (!!component?.nodes?.[terminal]?.value) {
       return;
     }
 
@@ -298,7 +298,7 @@ export const Workspace = () => {
         ...circuitCopy[indexOfComponent],
         nodes: {
           ...circuitCopy[indexOfComponent]?.nodes,
-          [terminal]: node,
+          [terminal]: { value: node },
         },
       };
       console.log(component.name, circuitCopy[indexOfComponent].nodes);
@@ -309,6 +309,10 @@ export const Workspace = () => {
   const setWireNodeToEndComponent = (wire: Wire) => {
     const [endComponent, endTerminalConnected] =
       findComponentAndTerminalConnectedByWire(wire.to);
+
+    if (!endTerminalConnected) {
+      return;
+    }
 
     const [initialComponent, initialTerminalConnected] =
       findComponentAndTerminalConnectedByWire(wire.from);
@@ -343,7 +347,7 @@ export const Workspace = () => {
       });
     }
 
-    const hasTerminal = !!endComponent?.nodes?.[endTerminalConnected];
+    const hasTerminal = !!endComponent?.nodes?.[endTerminalConnected]?.value;
 
     if (!initialComponent) {
       return;
@@ -354,7 +358,7 @@ export const Workspace = () => {
       updateComponentTerminalNode({
         component: endComponent!,
         terminal: endTerminalConnected!,
-        node: initialComponent!.nodes[initialTerminalConnected!],
+        node: initialComponent!.nodes[initialTerminalConnected!].value,
       });
       return;
     } else {
@@ -362,7 +366,7 @@ export const Workspace = () => {
       updateComponentTerminalNode({
         component: initialComponent!,
         terminal: initialTerminalConnected!,
-        node: endComponent!.nodes[initialTerminalConnected!],
+        node: endComponent!.nodes[initialTerminalConnected!].value,
       });
       setNodes(nodes - 1);
       return;
@@ -374,7 +378,7 @@ export const Workspace = () => {
     if (!component) {
       return [undefined, undefined];
     }
-    const terminal = findTerminalConnectedToWire(component, wirePosition);
+    const terminal = findTerminalConnectedToWire(component, wirePosition)!;
     return [component, terminal] as const;
   };
 

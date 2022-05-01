@@ -1,4 +1,3 @@
-import { KonvaEventObject } from "konva/lib/Node";
 import { ToolsTypes } from "./ToolsTypes";
 
 export interface Position {
@@ -35,12 +34,17 @@ interface TransistorNodes {
   emisor: string;
 }
 
-export interface ComponentType {
+export type ComponentType = {
   componentType: ComponentsKeys;
   id: number;
   image: string;
   position: Position;
   name: string;
   value: string;
-  nodes: ResistorNodes;
-}
+  nodes: {
+    [key in keyof ResistorNodes]: {
+      value: ResistorNodes[key];
+      position: Position;
+    };
+  };
+};

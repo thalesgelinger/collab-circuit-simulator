@@ -25,7 +25,9 @@ export class Simulation {
     const netlist = circuit
       .map((component) => {
         const { name, value, nodes } = component;
-        return [name, nodes.positive, nodes.negative, value].join(" ");
+        return [name, nodes.positive.value, nodes.negative.value, value].join(
+          " "
+        );
       })
       .join("\n");
     return `Circuit \n ${netlist}`;
