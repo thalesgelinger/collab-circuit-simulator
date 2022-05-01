@@ -9,11 +9,17 @@ export interface Position {
 type ComponentsKeys = keyof ComponentsTypes | keyof ToolsTypes;
 interface ComponentsTypes {
   resistor: ResistorNodes;
-  transistor: TransistorNodes;
   dc_source: VoltageSourceNodes;
+  capacitor: CapacitorNodes;
+  transistor: TransistorNodes;
 }
 
 interface ResistorNodes {
+  positive: string;
+  negative: string;
+}
+
+interface CapacitorNodes {
   positive: string;
   negative: string;
 }

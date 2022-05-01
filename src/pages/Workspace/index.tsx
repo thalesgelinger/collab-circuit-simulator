@@ -108,6 +108,7 @@ export const Workspace = () => {
     const types = {
       resistor: "R",
       dc_source: "V",
+      capacitor: "C",
       voltimeter: "VOLTMETER_",
     } as { [key: string]: string };
 

@@ -1,15 +1,9 @@
 import { KonvaEventObject } from "konva/lib/Node";
-import { Rect, KonvaNodeComponent, Ellipse } from "react-konva";
+import { Rect } from "react-konva";
 import { ComponentType } from "../../../@types";
-import res from "../../../assets/components/resistor.svg";
-import useImage from "use-image";
-import { Image as ImageProps, ImageConfig } from "konva/lib/shapes/Image";
-import { useEffect, useRef, useState } from "react";
-import {
-  Ellipse as EllipseProp,
-  EllipseConfig,
-} from "konva/lib/shapes/Ellipse";
+import { useState } from "react";
 import { DraggableComponent } from "../../../components";
+import { tools } from "../../../assets/simulation/tools";
 
 export type DraggableComponentType = KonvaEventObject<DragEvent> &
   ComponentType;
@@ -51,8 +45,7 @@ export const Tools = ({
   const componentsUseful: ComponentType[] = [
     {
       componentType: "voltimeter",
-      image:
-        "https://firebasestorage.googleapis.com/v0/b/collab-circuit-simulator.appspot.com/o/tools%2Fvoltimeter.png?alt=media&token=cae7f05f-3859-4b73-965e-fbf3eecb00ee",
+      image: tools.voltimeter,
       value: "0",
     } as ComponentType,
   ];
