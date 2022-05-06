@@ -29,7 +29,7 @@ interface VoltageSourceNodes {
 }
 
 interface TransistorNodes {
-  base: string;
+  base: number;
   coletor: string;
   emisor: string;
 }
@@ -41,6 +41,7 @@ export type ComponentType = {
   position: Position;
   name: string;
   value: string;
+  angle: 0 | 90 | 180 | 270;
   nodes: {
     [key in keyof ResistorNodes]: {
       value: ResistorNodes[key];

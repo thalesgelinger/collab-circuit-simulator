@@ -13,7 +13,6 @@ export class Simulation {
     };
     const circuit = circuitFull.filter(removeTools);
     this.#netlist = this.#circuitTypeToNetlist(circuit);
-    console.log({ netlist: this.#netlist });
   }
 
   async #run(netlist: string) {

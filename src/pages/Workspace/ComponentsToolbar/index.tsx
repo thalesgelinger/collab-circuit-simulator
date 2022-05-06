@@ -1,14 +1,7 @@
 import { KonvaEventObject } from "konva/lib/Node";
-import { Rect, KonvaNodeComponent, Ellipse } from "react-konva";
+import { Rect } from "react-konva";
 import { ComponentType } from "../../../@types";
-import res from "../../../assets/components/resistor.svg";
-import useImage from "use-image";
-import { Image as ImageProps, ImageConfig } from "konva/lib/shapes/Image";
-import { useEffect, useRef, useState } from "react";
-import {
-  Ellipse as EllipseProp,
-  EllipseConfig,
-} from "konva/lib/shapes/Ellipse";
+import { useState } from "react";
 import { DraggableComponent } from "../../../components";
 import { components } from "../../../assets/simulation/components";
 
@@ -54,16 +47,19 @@ export const ComponentsToolbar = ({
       componentType: "resistor",
       image: components.resistor,
       value: "100",
+      angle: 0,
     } as ComponentType,
     {
       componentType: "dc_source",
       image: components.dc_source,
       value: "5",
+      angle: 0,
     } as ComponentType,
     {
       componentType: "capacitor",
       image: components.capacitor,
       value: "1u",
+      angle: 0,
     } as ComponentType,
   ];
 

@@ -9,10 +9,12 @@ interface CircuitProps {
     component: ComponentType
   ) => void;
   onComponentDroped: (component: ComponentType) => void;
+  onClickComponent: (component: ComponentType) => void;
 }
 
 export const Circuit = (props: CircuitProps) => {
-  const { components, onComponentMoving, onComponentDroped } = props;
+  const { components, onComponentMoving, onComponentDroped, onClickComponent } =
+    props;
 
   const handleComponentMove =
     (component: ComponentType) => (event: KonvaEventObject<DragEvent>) => {
@@ -35,6 +37,7 @@ export const Circuit = (props: CircuitProps) => {
             onDragMove={handleComponentMove(component)}
             onDragEnd={handleComponentDrop(component)}
             backToOrigin={false}
+            onClickComponent={onClickComponent}
           />
         );
       })}

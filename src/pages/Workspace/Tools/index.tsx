@@ -47,6 +47,7 @@ export const Tools = ({
       componentType: "voltimeter",
       image: tools.voltimeter,
       value: "0",
+      angle: 0,
     } as ComponentType,
   ];
 

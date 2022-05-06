@@ -16,8 +16,12 @@ import { getDatabase, onValue, ref, set } from "firebase/database";
 import { Position } from "../../@types/ComponentType";
 import { Tools } from "./Tools";
 import { Toolbar } from "./Toolbar";
-import { Provider } from "react-redux";
-import { store } from "../../services/redux/store";
+import { Provider, useDispatch, useSelector } from "react-redux";
+import { RootState, store } from "../../services/redux/store";
+import {
+  ActionTypes,
+  updateCircuit,
+} from "../../services/redux/simulationSlice";
 
 type WiresHandle = ElementRef<typeof Wires>;
 
@@ -30,12 +34,15 @@ export const Workspace = () => {
   const blockSnapSize = 20;
   const snapPosition = useSnapToGrid(blockSnapSize);
 
-  const [currentAction, setCurrentAction] = useState("");
   const [showTools, setShowTools] = useState(false);
 
   const wireRef = useRef<WiresHandle>(null);
 
+  const dispatch = useDispatch();
+
   const [nodes, setNodes] = useState(0);
+
+  const [action, setAction] = useState("");
 
   // const { user } = useAuth();
 
@@ -48,16 +55,17 @@ export const Workspace = () => {
 
   useEffect(() => {
     console.log({ circuit });
+    dispatch(updateCircuit(circuit));
   }, [circuit]);
 
-  useEffect(() => {
-    const db = getDatabase(app);
-    const starCountRef = ref(db, "circuits");
-    onValue(starCountRef, (snapshot) => {
-      const { circuit } = snapshot.val();
-      setCircuit(circuit);
-    });
-  }, []);
+  // useEffect(() => {
+  //   const db = getDatabase(app);
+  //   const starCountRef = ref(db, "circuits");
+  //   onValue(starCountRef, (snapshot) => {
+  //     const { circuit } = snapshot.val();
+  //     setCircuit(circuit);
+  //   });
+  // }, []);
 
   const handleDragMove = useCallback(
     (e: KonvaEventObject<DragEvent>, component = {} as ComponentType) => {
@@ -80,8 +88,14 @@ export const Workspace = () => {
 
       setCircuit((circuit) => {
         const circuitCopy = [...circuit];
-        console.log({ componentIndex });
-        circuitCopy[componentIndex].position = snapedPosition;
+        circuitCopy[componentIndex] = {
+          ...circuitCopy[componentIndex],
+          position: snapedPosition,
+          nodes: getNodesByComponentRotation(
+            circuitCopy[componentIndex],
+            snapedPosition
+          ),
+        };
         return circuitCopy;
       });
     },
@@ -99,6 +113,23 @@ export const Workspace = () => {
       componentType: event.componentType,
       value: event.value,
       name: getComponentNameByType(event.componentType),
+      angle: event.angle,
+      nodes: {
+        positive: {
+          value: "",
+          position: {
+            x: event.target.x(),
+            y: event.target.y() + blockSnapSize,
+          },
+        },
+        negative: {
+          value: "",
+          position: {
+            x: event.target.x() + blockSnapSize * 2,
+            y: event.target.y() + blockSnapSize,
+          },
+        },
+      },
     } as ComponentType;
     console.log({ component });
     setCircuit([component, ...circuit]);
@@ -139,16 +170,19 @@ export const Workspace = () => {
   const handleStageClick = (evt: KonvaEventObject<MouseEvent>) => {
     const actions = {
       edit,
-      remove,
     } as ActionsType;
 
-    if (!!actions?.[currentAction]) {
-      actions[currentAction](evt);
+    if (!!actions?.[action]) {
+      actions[action](evt);
     }
   };
 
   const edit = (evt: KonvaEventObject<MouseEvent>) => {
     const { wire, wires, setWire, setWires, points } = wireRef.current!;
+
+    if (!hasClickedToComponentTerminal(evt)) {
+      console.log("NAO CONECTOU NO COMPONENTE IMBECIL");
+    }
 
     if (!wire?.from) {
       createWire(evt);
@@ -156,6 +190,7 @@ export const Workspace = () => {
     }
 
     if (wireHasConnectedToComponent(wire)) {
+      console.log("DONE");
       setWireNodeToEndComponent(wire);
       setWire({} as Wire);
       setWires([...wires, points]);
@@ -170,56 +205,145 @@ export const Workspace = () => {
     setWire({ from: wire.to } as Wire);
   };
 
-  const remove = (evt: KonvaEventObject<MouseEvent>) => {
-    const clickedPosition = getPointerPositionByEvent(evt);
+  const hasClickedToComponentTerminal = (evt: KonvaEventObject<MouseEvent>) => {
+    const { x, y } = getPointerPositionByEvent(evt);
+    const position = snapPosition(x, y);
 
-    removeComponent(clickedPosition);
-    removeWire(clickedPosition);
+    const hasConnected = circuit.some((component) => {
+      const connectedToPositive =
+        JSON.stringify(component.nodes.positive.position) ===
+        JSON.stringify(position);
+      const connectedToNegative =
+        JSON.stringify(component.nodes.negative.position) ===
+        JSON.stringify(position);
+
+      return connectedToNegative || connectedToPositive;
+    });
+
+    if (hasConnected) {
+      console.log("AEEEE");
+    }
+
+    return hasConnected;
   };
 
-  const removeComponent = ({ x, y }: Position) => {
-    const componentClicked = (component: ComponentType) => {
-      const xMax = component.position.x + blockSnapSize * 2;
-      const yMax = component.position.y + blockSnapSize * 2;
-      const validX = x < xMax && component.position.x < x;
-      const validY = y < yMax && component.position.y < y;
-      console.log({
-        validX,
-        validY,
-        positionCOmponent: component.position,
-        x,
-        y,
-        xMax,
-        yMax,
-      });
-      return !(validX && validY);
+  const rotate = (component: ComponentType) => {
+    const angles = {
+      0: 90,
+      90: 180,
+      180: 270,
+      270: 0,
+    } as { [key: number]: 0 | 90 | 180 | 270 };
+
+    console.log({ componentAngle: component.angle });
+
+    updateRotateNodes(component, angles[component.angle]);
+  };
+
+  const updateRotateNodes = (
+    component: ComponentType,
+    angle: 0 | 90 | 180 | 270
+  ) => {
+    const nodes = getNodesByComponentRotation({ ...component, angle });
+
+    setCircuit((circuit) => {
+      const circuitCopy = [...circuit];
+      const indexOfComponent = circuit.findIndex(
+        ({ id }) => id === component.id
+      );
+      circuitCopy[indexOfComponent] = {
+        ...circuitCopy[indexOfComponent],
+        angle,
+        nodes,
+      };
+      return circuitCopy;
+    });
+  };
+
+  const getNodesByComponentRotation = (
+    { nodes, angle, position: componentPosition }: ComponentType,
+    snapedPosition?: Position
+  ) => {
+    const position = snapedPosition ?? componentPosition;
+
+    const rotation = {
+      0: {
+        positive: {
+          value: nodes.positive.value,
+          position: {
+            x: position.x,
+            y: position.y + blockSnapSize,
+          },
+        },
+        negative: {
+          value: nodes.negative.value,
+          position: {
+            x: position.x + blockSnapSize * 2,
+            y: position.y + blockSnapSize,
+          },
+        },
+      },
+      90: {
+        positive: {
+          value: nodes.positive.value,
+          position: {
+            x: position.x - blockSnapSize,
+            y: position.y,
+          },
+        },
+        negative: {
+          value: nodes.negative.value,
+          position: {
+            x: position.x - blockSnapSize,
+            y: position.y + blockSnapSize * 2,
+          },
+        },
+      },
+      180: {
+        positive: {
+          value: nodes.positive.value,
+          position: {
+            x: position.x,
+            y: position.y - blockSnapSize,
+          },
+        },
+        negative: {
+          value: nodes.negative.value,
+          position: {
+            x: position.x - blockSnapSize * 2,
+            y: position.y - blockSnapSize,
+          },
+        },
+      },
+      270: {
+        positive: {
+          value: nodes.positive.value,
+          position: {
+            x: position.x + blockSnapSize,
+            y: position.y,
+          },
+        },
+        negative: {
+          value: nodes.negative.value,
+          position: {
+            x: position.x + blockSnapSize,
+            y: position.y - blockSnapSize * 2,
+          },
+        },
+      },
     };
 
-    const circuitWithComponentRemoved = circuit.filter(componentClicked);
+    return rotation[angle];
+  };
+
+  const removeComponent = ({ id }: ComponentType) => {
+    const circuitWithComponentRemoved = circuit.filter(
+      (component) => component.id !== id
+    );
 
     console.log({ circuitWithComponentRemoved });
 
     setCircuit(circuitWithComponentRemoved);
-  };
-
-  const removeWire = (position: Position) => {
-    const { x, y } = snapPosition(position.x, position.y);
-
-    const wires = wireRef.current!.wires;
-
-    const hasClickedIntoWire = (point: number, i: number, arr: number[]) => {
-      return point === x && arr[i + 1] === y;
-    };
-
-    const wireClickedIndex = wires.findIndex((line) => {
-      return line.some(hasClickedIntoWire);
-    });
-
-    const wiresWithoutCLickedWire = wires.filter(
-      (_, i) => i !== wireClickedIndex
-    );
-
-    console.log({ wires, wiresWithoutCLickedWire, x, y, wireClickedIndex });
   };
 
   const createWire = (evt: KonvaEventObject<MouseEvent>) => {
@@ -266,11 +390,15 @@ export const Workspace = () => {
   };
 
   const findTerminalConnectedToWire = (
-    { position }: ComponentType,
-    wirePoint: Position
+    { nodes: { negative, positive } }: ComponentType,
+    { x, y }: Position
   ) => {
-    const isNegative = position?.x === wirePoint.x;
-    const isPositive = position?.x + blockSnapSize * 2 === wirePoint.x;
+    const isNegative = negative.position?.x === x && negative.position?.y === y;
+
+    const isPositive = positive.position?.x === x && positive.position?.y === y;
+
+    console.log({ negative, positive, x, y });
+
     if (isPositive) {
       return "positive";
     } else if (isNegative) {
@@ -298,7 +426,10 @@ export const Workspace = () => {
         ...circuitCopy[indexOfComponent],
         nodes: {
           ...circuitCopy[indexOfComponent]?.nodes,
-          [terminal]: { value: node },
+          [terminal]: {
+            value: node,
+            position: circuitCopy[indexOfComponent]?.nodes[terminal].position,
+          },
         },
       };
       console.log(component.name, circuitCopy[indexOfComponent].nodes);
@@ -317,6 +448,8 @@ export const Workspace = () => {
     const [initialComponent, initialTerminalConnected] =
       findComponentAndTerminalConnectedByWire(wire.from);
 
+    console.log({ initialComponent, initialTerminalConnected });
+
     if (!initialComponent && !initialTerminalConnected) {
       const wires = wireRef.current!.wires;
 
@@ -331,6 +464,8 @@ export const Workspace = () => {
       const previousWireIndex = wires.findIndex((line) => {
         return line.some(isCurrentWirePosition);
       });
+
+      console.log({ previousWireIndex, w: wires[previousWireIndex] });
 
       const previousWireFromX = wires[previousWireIndex].findIndex(
         isCurrentWirePosition
@@ -352,6 +487,8 @@ export const Workspace = () => {
     if (!initialComponent) {
       return;
     }
+
+    console.log({ initialComponent, initialTerminalConnected });
 
     if (!hasTerminal) {
       console.log("CONECTOU NO END");
@@ -383,17 +520,17 @@ export const Workspace = () => {
   };
 
   const wireHasConnectedToComponent = (wire: Wire) => {
-    const hasArrived = circuit.some((component) => {
-      const xMaxRange = component.position.x + blockSnapSize * 2;
-      const xMinRange = component.position.x;
-      const yRange = component.position.y + blockSnapSize; // Y must be exactly this one when default rotatio
-      const isPositiveTerminal = wire.to.x == xMinRange;
-      const isNegativeTerinal = xMaxRange == wire.to.x;
-      const arrivedX = isNegativeTerinal || isPositiveTerminal;
-      const arrivedY = yRange === wire.to.y;
-      return arrivedX && arrivedY;
+    const hasConnected = circuit.some((component) => {
+      const connectedToPositive =
+        JSON.stringify(component.nodes.positive.position) ===
+        JSON.stringify(wire.to);
+      const connectedToNegative =
+        JSON.stringify(component.nodes.negative.position) ===
+        JSON.stringify(wire.to);
+
+      return connectedToNegative || connectedToPositive;
     });
-    return hasArrived;
+    return hasConnected;
   };
 
   const wireConnectedToOtherWire = (wirePosition: Position) => {
@@ -423,30 +560,44 @@ export const Workspace = () => {
   };
 
   const findComponentByWirePosition = (wirePosition: Position) => {
-    return circuit.find(({ position }) => isConnected(position, wirePosition));
+    const component = circuit.find((component) => {
+      const connectedToPositive =
+        JSON.stringify(component.nodes.positive.position) ===
+        JSON.stringify(wirePosition);
+      const connectedToNegative =
+        JSON.stringify(component.nodes.negative.position) ===
+        JSON.stringify(wirePosition);
+
+      return connectedToNegative || connectedToPositive;
+    });
+    return component;
   };
 
-  const isConnected = (componentPos: Position, wirePos: Position) => {
-    const { isNegative, isPositive } = findTerminalConnected(
-      componentPos,
-      wirePos
-    );
+  const handleComponentClick = (component: ComponentType) => {
+    console.log({ component });
 
-    const isConnectedOnX = isPositive || isNegative;
-    const isConnectedOnY = componentPos.y + blockSnapSize === wirePos.y;
+    const actions = {
+      rotate,
+      remove,
+    } as {
+      [key: string]: (component: ComponentType) => void;
+    };
 
-    return isConnectedOnX && isConnectedOnY;
+    if (!!actions?.[action]) {
+      actions[action](component);
+    }
   };
 
-  const findTerminalConnected = (componentPos: Position, wirePos: Position) => {
-    const isNegative = componentPos.x === wirePos.x;
-    const isPositive = componentPos.x + blockSnapSize * 2 === wirePos.x;
-    return { isPositive, isNegative };
+  const remove = (elementClicked: ComponentType | Wire) => {
+    if ((elementClicked as ComponentType)?.componentType) {
+      removeComponent(elementClicked as ComponentType);
+    }
+    //TODO: remove wire
   };
 
   return (
     <div className={styles.container}>
-      <ActionsToolbar onActionChange={setCurrentAction} circuit={circuit} />
+      <ActionsToolbar circuit={circuit} onActionChange={setAction} />
       <Stage
         width={window.innerWidth}
         height={window.innerHeight}
@@ -462,6 +613,7 @@ export const Workspace = () => {
               components={circuit}
               onComponentMoving={handleDragMove}
               onComponentDroped={handleDragRelease}
+              onClickComponent={handleComponentClick}
             />
             <Wires ref={wireRef} />
           </Layer>

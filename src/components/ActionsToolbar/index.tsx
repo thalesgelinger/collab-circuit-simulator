@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { ComponentType } from "../../@types";
 import { Simulation } from "../../models/Simulation";
-import { addCircuit } from "../../services/redux/simulationSlice";
+import { ActionTypes, addCircuit } from "../../services/redux/simulationSlice";
+import { RootState } from "../../services/redux/store";
 import { Icon } from "../Icon";
 
 import styles from "./styles.module.scss";
@@ -11,34 +12,35 @@ import styles from "./styles.module.scss";
 
 const ICON_DEFAULT_SIZE = 40;
 
-type ActionTypes = "edit" | "remove";
 interface ActionsToolbarProps {
   onActionChange: (actionType: ActionTypes) => void;
   circuit: ComponentType[];
 }
 
 export const ActionsToolbar = ({
-  onActionChange,
   circuit,
+  onActionChange,
 }: ActionsToolbarProps) => {
-  const [currentAction, setCurrentAction] = useState<ActionTypes>("");
+  const [action, setAction] = useState("");
 
   const dispatch = useDispatch();
 
   useEffect(() => {
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
-        setCurrentAction("");
+        setAction("");
+        onActionChange("");
       }
     });
   }, []);
 
-  useEffect(() => {
-    onActionChange(currentAction);
-  }, [currentAction]);
-
   const handleActionsChange = (actionType: ActionTypes) => () => {
-    setCurrentAction(actionType === currentAction ? "" : actionType);
+    console.log({ actionType });
+
+    const updatedAction = actionType === action ? "" : actionType;
+
+    setAction(updatedAction);
+    onActionChange(updatedAction);
   };
 
   return (
@@ -48,13 +50,6 @@ export const ActionsToolbar = ({
         size={ICON_DEFAULT_SIZE}
         color={"#black"}
         onClick={async () => {
-          console.log({
-            circuit: circuit.map((comp) => [
-              comp.name,
-              comp.nodes.positive,
-              comp.nodes.negative,
-            ]),
-          });
           dispatch(addCircuit(circuit));
         }}
       />
@@ -63,16 +58,26 @@ export const ActionsToolbar = ({
         size={ICON_DEFAULT_SIZE}
         color={"#black"}
         onClick={handleActionsChange("edit")}
-        style={{ opacity: currentAction === "edit" ? 0.5 : 1 }}
+        style={{
+          border: `1px solid ${action === "edit" ? "black" : "transparent"}`,
+          borderRadius: ICON_DEFAULT_SIZE / 4,
+        }}
       />
       <Icon name="print" size={ICON_DEFAULT_SIZE} color={"#black"} />
       <Icon name="share" size={ICON_DEFAULT_SIZE} color={"#black"} />
+      <Icon
+        name="rotate"
+        size={ICON_DEFAULT_SIZE}
+        color={"#black"}
+        onClick={handleActionsChange("rotate")}
+        style={{ opacity: action === "rotate" ? 0.5 : 1 }}
+      />
       <Icon
         name="trash"
         size={ICON_DEFAULT_SIZE}
         color={"#black"}
         onClick={handleActionsChange("remove")}
-        style={{ opacity: currentAction === "remove" ? 0.5 : 1 }}
+        style={{ opacity: action === "remove" ? 0.5 : 1 }}
       />
       <Icon name="left-curly-arrow" size={ICON_DEFAULT_SIZE} color={"#black"} />
       <Icon

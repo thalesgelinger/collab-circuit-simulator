@@ -6,6 +6,7 @@ import play from "../../assets/icons/play.svg";
 import print from "../../assets/icons/print.svg";
 import share from "../../assets/icons/share.svg";
 import trash from "../../assets/icons/trash.svg";
+import rotate from "../../assets/icons/rotate.svg";
 
 export const icons = {
   close,
@@ -16,4 +17,5 @@ export const icons = {
   print,
   share,
   trash,
+  rotate,
 };
