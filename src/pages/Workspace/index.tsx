@@ -1,5 +1,5 @@
 import { ElementRef, useCallback, useEffect, useRef, useState } from "react";
-import { Layer, Stage } from "react-konva";
+import { Circle, Layer, Stage } from "react-konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { Vector2d } from "konva/lib/types";
 import { ComponentType } from "../../@types";
@@ -43,6 +43,8 @@ export const Workspace = () => {
   const [nodes, setNodes] = useState(0);
 
   const [action, setAction] = useState("");
+
+  const [intersections, setIntersections] = useState<Position[]>([]);
 
   // const { user } = useAuth();
 
@@ -199,6 +201,11 @@ export const Workspace = () => {
 
     if (wireConnectedToOtherWire(wire.to)) {
       console.log("É UMA JUNÇÃO");
+      connectNodeToComponent(wire);
+      setIntersections([...intersections, wire.to]);
+      setWire({} as Wire);
+      setWires([...wires, points]);
+      return;
     }
 
     setWires([...wires, points]);
@@ -220,11 +227,38 @@ export const Workspace = () => {
       return connectedToNegative || connectedToPositive;
     });
 
-    if (hasConnected) {
-      console.log("AEEEE");
-    }
-
     return hasConnected;
+  };
+
+  const connectNodeToComponent = (wire: Wire) => {
+    console.log("connectNodeToComponent");
+    const [componentEnd, terminalEnd] = findNodeOnPrevWire(wire.to);
+    console.log({ componentEnd, terminalEnd });
+    const [component, terminal] = findNodeOnPrevWire(wire.from);
+    console.log({ component, terminal });
+
+    const newComponent = {
+      component: component!,
+      terminal: terminal!,
+      node: componentEnd!.nodes[terminalEnd!].value,
+    };
+
+    console.log({ newComponent });
+    updateComponentTerminalNode(newComponent);
+  };
+
+  const findNodeOnPrevWire = (
+    wirePosition: Position
+  ): readonly [ComponentType, "positive" | "negative"] => {
+    console.log("findNodeOnPrevWire");
+    const [component, terminal] =
+      findComponentAndTerminalConnectedByWire(wirePosition)!;
+    console.log("findNodeOnPrevWire:", { component, terminal });
+    if (!component && !terminal) {
+      const position = findInPrevWires(wirePosition, true);
+      return findNodeOnPrevWire(position);
+    }
+    return [component!, terminal!] as const;
   };
 
   const rotate = (component: ComponentType) => {
@@ -340,9 +374,6 @@ export const Workspace = () => {
     const circuitWithComponentRemoved = circuit.filter(
       (component) => component.id !== id
     );
-
-    console.log({ circuitWithComponentRemoved });
-
     setCircuit(circuitWithComponentRemoved);
   };
 
@@ -380,6 +411,9 @@ export const Workspace = () => {
       return;
     }
 
+    console.log({ component, terminal, node: nodes.toString() });
+
+    console.log("setWireNodeToComponent:");
     updateComponentTerminalNode({
       component,
       terminal,
@@ -451,34 +485,10 @@ export const Workspace = () => {
     console.log({ initialComponent, initialTerminalConnected });
 
     if (!initialComponent && !initialTerminalConnected) {
-      const wires = wireRef.current!.wires;
-
-      const isCurrentWirePosition = (
-        point: number,
-        i: number,
-        arr: number[]
-      ) => {
-        return point === wire.from.x && arr[i + 1] === wire.from.y;
-      };
-
-      const previousWireIndex = wires.findIndex((line) => {
-        return line.some(isCurrentWirePosition);
-      });
-
-      console.log({ previousWireIndex, w: wires[previousWireIndex] });
-
-      const previousWireFromX = wires[previousWireIndex].findIndex(
-        isCurrentWirePosition
-      );
-
-      const previousWireFromY = previousWireFromX + 1;
-
+      const from = findInPrevWires(wire.from);
       setWireNodeToEndComponent({
         ...wire,
-        from: {
-          x: wires[previousWireIndex][previousWireFromX - 2],
-          y: wires[previousWireIndex][previousWireFromY - 2],
-        },
+        from,
       });
     }
 
@@ -510,6 +520,37 @@ export const Workspace = () => {
     }
   };
 
+  const findInPrevWires = (wirePosition: Position, isBetween = false) => {
+    const wires = mappedWirePointsArray();
+
+    const findFunction = isBetween
+      ? isPointBetweenWires(wirePosition)
+      : isCurrentWirePosition(wirePosition);
+
+    const currentWireIndex = wires?.findIndex((line) => {
+      return line.some(findFunction);
+    });
+
+    console.log("INDICE DO SEGUNDO ARRAY");
+    const currentWirePointIndex =
+      wires[currentWireIndex]?.findIndex(findFunction);
+
+    console.log({
+      currentWireIndex,
+      wires,
+      wirePosition,
+      currentWirePointIndex,
+    });
+
+    const prevIndex =
+      currentWirePointIndex <= 0 ? 0 : currentWirePointIndex - 1;
+
+    return {
+      x: wires[currentWireIndex][prevIndex].x,
+      y: wires[currentWireIndex][prevIndex].y,
+    };
+  };
+
   const findComponentAndTerminalConnectedByWire = (wirePosition: Position) => {
     const component = findComponentByWirePosition(wirePosition);
     if (!component) {
@@ -533,16 +574,48 @@ export const Workspace = () => {
     return hasConnected;
   };
 
-  const wireConnectedToOtherWire = (wirePosition: Position) => {
+  const wireConnectedToOtherWire = ({ x, y }: Position) => {
     console.log("ENTROU  PRA VERIFICAR");
-
-    const isWireConnectedToOtherWire = wireRef.current?.wires.some((line) => {
-      return line.some((v, i) => {
-        return v === wirePosition.x && line[i + 1] === wirePosition.y;
-      });
+    const isWireConnectedToOtherWire = mappedWirePointsArray()!.some((line) => {
+      return line.some(isPointBetweenWires({ x, y }));
     });
+
     return isWireConnectedToOtherWire;
   };
+
+  const isCurrentWirePosition =
+    (wirePosition: Position) => (point: Position) => {
+      return compareObjects(point, wirePosition);
+    };
+
+  const isPointBetweenWires =
+    ({ x, y }: Position) =>
+    (prevPoint: Position, index: number, line: Position[]) => {
+      const nextPoint = line[index + 1];
+      const isConnectedOnX = prevPoint?.x >= x && x >= nextPoint?.x;
+      const isConnectedOnY = prevPoint?.y >= y && y >= nextPoint?.y;
+      const isConnected = isConnectedOnX && isConnectedOnY;
+      console.log("OrdenNomal:", index, { isConnectedOnX, isConnectedOnY });
+      if (!isConnected) {
+        const isConnectedOnX = prevPoint?.x <= x && x <= nextPoint?.x;
+        const isConnectedOnY = prevPoint?.y <= y && y <= nextPoint?.y;
+        console.log("OrdenInversa", index, { isConnectedOnX, isConnectedOnY });
+        return isConnectedOnX && isConnectedOnY;
+      }
+      return isConnected;
+    };
+
+  const mappedWirePointsArray = () =>
+    wireRef.current?.wires.map((line) => {
+      let lineMappedToPosition = [];
+      for (let i = 0; i < line.length; i += 2) {
+        lineMappedToPosition.push({
+          x: line[i],
+          y: line[i + 1],
+        });
+      }
+      return lineMappedToPosition;
+    });
 
   const handleStageMouseMove = (evt: KonvaEventObject<MouseEvent>) => {
     if (!wireRef.current?.wire?.from) {
@@ -561,16 +634,25 @@ export const Workspace = () => {
 
   const findComponentByWirePosition = (wirePosition: Position) => {
     const component = circuit.find((component) => {
-      const connectedToPositive =
-        JSON.stringify(component.nodes.positive.position) ===
-        JSON.stringify(wirePosition);
-      const connectedToNegative =
-        JSON.stringify(component.nodes.negative.position) ===
-        JSON.stringify(wirePosition);
+      console.log("component inside the finder", { component, wirePosition });
 
+      const connectedToPositive = compareObjects(
+        component.nodes.positive.position,
+        wirePosition
+      );
+      const connectedToNegative = compareObjects(
+        component.nodes.negative.position,
+        wirePosition
+      );
+      console.log({ connectedToNegative, connectedToPositive });
       return connectedToNegative || connectedToPositive;
     });
+    console.log("findComponentByWirePosition:", { component });
     return component;
+  };
+
+  const compareObjects = (obj1: object, obj2: object) => {
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
   };
 
   const handleComponentClick = (component: ComponentType) => {
@@ -616,6 +698,17 @@ export const Workspace = () => {
               onClickComponent={handleComponentClick}
             />
             <Wires ref={wireRef} />
+            {intersections.map(({ x, y }, i) => (
+              <Circle
+                key={i}
+                radius={5}
+                fill="black"
+                stroke="black"
+                strokeWidth={0}
+                x={x}
+                y={y}
+              />
+            ))}
           </Layer>
 
           <Toolbar

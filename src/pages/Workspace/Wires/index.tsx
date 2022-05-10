@@ -51,6 +51,10 @@ export const Wires = forwardRef<WiresHandle, WiresProps>((_, ref) => {
     });
   }, []);
 
+  useEffect(() => {
+    console.log({ wires });
+  }, [wires]);
+
   const getCurvePoint = (from: Vector2d, to: Vector2d) => {
     if (!hasPoints(from, to)) {
       return;
@@ -96,6 +100,9 @@ export const Wires = forwardRef<WiresHandle, WiresProps>((_, ref) => {
             stroke="#000"
             fill="#000"
             strokeWidth={3}
+            onClick={() => {
+              console.log("Wire CLicked");
+            }}
           />
         );
       })}
