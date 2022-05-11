@@ -8,13 +8,14 @@ import {
   useRef,
   useState,
 } from "react";
-import { Image, Text, Circle } from "react-konva";
+import { Image, Text, Circle, Group } from "react-konva";
 import { ComponentType } from "../../@types";
 import useImage from "use-image";
 import { Html } from "react-konva-utils";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../services/redux/store";
 import { Position } from "../../@types/ComponentType";
+import { updateCircuit } from "../../services/redux/simulationSlice";
 
 interface DraggableComponentProps {
   size: number;
@@ -41,19 +42,23 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
     onClickComponent,
   } = props;
 
+  console.log({ componentData });
+
   const ref = useRef<any>();
   const textRef = useRef<ElementRef<typeof Text>>(null);
 
   const [editingLabel, toggleEditingLabel] = useReducer((s) => !s, false);
 
-  const [label, setLabel] = useState("");
+  const [component, setComponent] = useState(componentData);
   const [measureValue, setMeasureValue] = useState("");
 
   const [image] = useImage(componentData!.image);
 
-  const simulation = useSelector(
-    (state: RootState) => state.simulation.simulation
+  const { simulation, circuit } = useSelector(
+    (state: RootState) => state.simulation
   );
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     console.log({ simulation });
@@ -72,14 +77,24 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
     }
   };
 
-  const editComponentLabel = (evt: ChangeEvent<HTMLInputElement>) => {
-    setLabel(evt.target.value);
-  };
+  const editComponent =
+    (key: keyof ComponentType) => (evt: ChangeEvent<HTMLInputElement>) => {
+      setComponent({ ...component, [key]: evt.target.value });
+    };
 
   const submitNewLabel = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     toggleEditingLabel();
-    console.log("Teste");
+    console.log("Teste", { component });
+
+    const circuitCopy = [...circuit];
+    const componentIndex = circuit.findIndex(({ id }) => {
+      id === component?.id;
+    });
+
+    circuitCopy[componentIndex] = component!;
+
+    dispatch(updateCircuit(circuitCopy));
   };
 
   const handleDoubleClick = async () => {
@@ -127,26 +142,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
       {backToOrigin && (
         <Image image={image} height={size * 2} width={size * 2} x={x} y={y} />
       )}
-      {!!componentData && (
-        <Circle
-          radius={10}
-          fill="yellow"
-          stroke="black"
-          strokeWidth={5}
-          x={xComponent}
-          y={yComponent}
-        />
-      )}
-      {!!componentData && (
-        <Circle
-          radius={10}
-          fill="blue"
-          stroke="black"
-          strokeWidth={5}
-          x={componentData?.nodes?.negative?.position.x}
-          y={componentData?.nodes?.negative?.position.y}
-        />
-      )}
+
       <Image
         image={image}
         ref={ref}
@@ -162,21 +158,12 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
         onDblClick={handleDoubleClick}
         onClick={onComponentClick}
       />
-      {!!componentData && (
-        <Circle
-          radius={10}
-          fill="red"
-          stroke="black"
-          strokeWidth={5}
-          x={componentData?.nodes?.positive?.position.x}
-          y={componentData?.nodes?.positive?.position.y}
-        />
-      )}
+
       {componentData?.name && (
         <>
           <Text
             ref={textRef}
-            text={componentData?.name}
+            text={component?.name}
             x={x}
             y={y - 21}
             fontSize={14}
@@ -185,7 +172,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
           {componentData?.value && (
             <Text
               ref={textRef}
-              text={componentData?.value}
+              text={component?.value}
               x={x}
               y={y - 7}
               fontSize={14}
@@ -203,18 +190,43 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
             },
           }}
         >
-          <form onSubmit={submitNewLabel}>
+          <form
+            onSubmit={submitNewLabel}
+            style={{
+              position: "absolute",
+              top: y,
+              left: x,
+              width: 150,
+              height: 200,
+              backgroundColor: "white",
+              border: "2px solid black",
+              borderRadius: 8,
+              padding: 8,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-around",
+            }}
+          >
+            <h4>Editing component</h4>
+            <label>Name :</label>
             <input
               type="text"
-              onChange={editComponentLabel}
-              value={label ?? componentData?.name}
+              onChange={editComponent("name")}
+              value={component?.name}
               style={{
-                position: "absolute",
-                width: textRef!.current?.textArr[0].width,
-                top: y,
-                left: x,
+                width: "100%",
               }}
             />
+            <label>Value :</label>
+            <input
+              type="text"
+              onChange={editComponent("value")}
+              value={component?.value}
+              style={{
+                width: "100%",
+              }}
+            />
+            <button>Confirm</button>
           </form>
         </Html>
       )}

@@ -26,10 +26,10 @@ export const Circuit = (props: CircuitProps) => {
 
   return (
     <>
-      {components.map((component, i) => {
+      {components.map((component) => {
         return (
           <DraggableComponent
-            key={i}
+            key={component.id}
             componentData={component}
             size={20}
             x={component.position.x}
