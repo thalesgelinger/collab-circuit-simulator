@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../services/redux/store";
 import { Position } from "../../@types/ComponentType";
 import { updateCircuit } from "../../services/redux/simulationSlice";
+import { DefaultComponentForm } from "./DefaultComponentForm";
 
 interface DraggableComponentProps {
   size: number;
@@ -26,6 +27,7 @@ interface DraggableComponentProps {
   onDragMove?: (event: KonvaEventObject<DragEvent>) => void;
   onDragEnd?: (event: ComponentType) => void;
   onClickComponent: (component: ComponentType) => void;
+  onCircuitUpdate: (component: ComponentType[]) => void;
   componentData?: ComponentType;
 }
 
@@ -40,6 +42,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
     backToOrigin = true,
     componentData,
     onClickComponent,
+    onCircuitUpdate,
   } = props;
 
   console.log({ componentData });
@@ -49,10 +52,11 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
   const [editingLabel, toggleEditingLabel] = useReducer((s) => !s, false);
 
-  const [component, setComponent] = useState(componentData);
   const [measureValue, setMeasureValue] = useState("");
 
   const [image] = useImage(componentData!.image);
+
+  const [component, setComponent] = useState(componentData);
 
   const { simulation, circuit } = useSelector(
     (state: RootState) => state.simulation
@@ -61,8 +65,8 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    console.log({ simulation });
-  }, [simulation]);
+    console.log({ simulation, circuit });
+  }, [simulation, circuit]);
 
   const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
     if (!!onDragEnd) {
@@ -77,24 +81,16 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
     }
   };
 
-  const editComponent =
-    (key: keyof ComponentType) => (evt: ChangeEvent<HTMLInputElement>) => {
-      setComponent({ ...component, [key]: evt.target.value });
-    };
-
-  const submitNewLabel = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    toggleEditingLabel();
-    console.log("Teste", { component });
-
-    const circuitCopy = [...circuit];
+  const submitNewLabel = (component: ComponentType) => {
+    setComponent(component);
+    const circuitCopy = Array.from(circuit);
     const componentIndex = circuit.findIndex(({ id }) => {
-      id === component?.id;
+      return id === component.id;
     });
-
-    circuitCopy[componentIndex] = component!;
-
-    dispatch(updateCircuit(circuitCopy));
+    circuitCopy[componentIndex] = component;
+    console.log("CIRCUIT COPY:", { circuitCopy });
+    onCircuitUpdate(circuitCopy);
+    toggleEditingLabel();
   };
 
   const handleDoubleClick = async () => {
@@ -140,7 +136,14 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
   return (
     <>
       {backToOrigin && (
-        <Image image={image} height={size * 2} width={size * 2} x={x} y={y} />
+        <Image
+          image={image}
+          height={size * 2}
+          width={size * 2}
+          x={x}
+          y={y}
+          rotation={componentData?.angle ?? 0}
+        />
       )}
 
       <Image
@@ -183,52 +186,12 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
       )}
 
       {editingLabel && (
-        <Html
-          divProps={{
-            style: {
-              position: "absolute",
-            },
-          }}
-        >
-          <form
-            onSubmit={submitNewLabel}
-            style={{
-              position: "absolute",
-              top: y,
-              left: x,
-              width: 150,
-              height: 200,
-              backgroundColor: "white",
-              border: "2px solid black",
-              borderRadius: 8,
-              padding: 8,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-around",
-            }}
-          >
-            <h4>Editing component</h4>
-            <label>Name :</label>
-            <input
-              type="text"
-              onChange={editComponent("name")}
-              value={component?.name}
-              style={{
-                width: "100%",
-              }}
-            />
-            <label>Value :</label>
-            <input
-              type="text"
-              onChange={editComponent("value")}
-              value={component?.value}
-              style={{
-                width: "100%",
-              }}
-            />
-            <button>Confirm</button>
-          </form>
-        </Html>
+        <DefaultComponentForm
+          key={componentData!.id}
+          componentData={componentData!}
+          position={{ x, y }}
+          onSubmit={submitNewLabel}
+        />
       )}
 
       {measureValue !== "" && (

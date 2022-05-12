@@ -44,23 +44,47 @@ export const ComponentsToolbar = ({
 
   const componentsUseful: ComponentType[] = [
     {
-      componentType: "resistor",
-      image: components.resistor,
-      value: "100",
-      angle: 0,
-    } as ComponentType,
-    {
       componentType: "dc_source",
       image: components.dc_source,
       value: "5",
-      angle: 0,
+      angle: 90,
+    } as ComponentType,
+    {
+      componentType: "ac_source",
+      image: components.ac_source,
+      value: "0",
+      angle: 90,
+    } as ComponentType,
+    {
+      componentType: "pulse_source",
+      image: components.pulse_source,
+      value: "0",
+      angle: 90,
+    } as ComponentType,
+    {
+      componentType: "resistor",
+      image: components.resistor,
+      value: "100",
+      angle: 90,
     } as ComponentType,
     {
       componentType: "capacitor",
       image: components.capacitor,
       value: "1u",
-      angle: 0,
+      angle: 90,
     } as ComponentType,
+    {
+      componentType: "inductor",
+      image: components.inductor,
+      value: "100H",
+      angle: 90,
+    } as ComponentType,
+    // {
+    //   componentType: "inductor",
+    //   image: components.diode,
+    //   value: "100H",
+    //   angle: 90,
+    // } as ComponentType,
   ];
 
   const [draggableComponents, setDraggableComponents] =
@@ -97,7 +121,7 @@ export const ComponentsToolbar = ({
           componentData={component}
           key={i}
           size={itemSize}
-          x={horizontalToolbarCenter + i}
+          x={horizontalToolbarCenter + i + ITEM_SIZE * 2}
           y={toolbarDistanceFromTop + i * componentsYFactor}
           onDragStart={handleComponentDragEnd(component)}
           onDragMove={handleComponentDragMove(component)}

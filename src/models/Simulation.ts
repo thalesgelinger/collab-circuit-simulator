@@ -6,18 +6,35 @@ export type CircuitType = ComponentType[];
 export class Simulation {
   #resultData: string[] = [];
   #netlist = "";
+  #nodes: number[] = [];
 
   constructor(circuitFull: CircuitType) {
     const removeTools = ({ componentType }: ComponentType) => {
       return !["voltimeter"].includes(componentType);
     };
+    this.#nodes = this.#extractNodes(circuitFull);
     const circuit = circuitFull.filter(removeTools);
     this.#netlist = this.#circuitTypeToNetlist(circuit);
+    // this.getPulseSimulationNodes();
+  }
+
+  get hasCircuit() {
+    return !!this.#netlist;
   }
 
   async #run(netlist: string) {
     const netlistResult = await window.runSpice(netlist);
     return netlistResult;
+  }
+
+  #extractNodes(circuit: CircuitType) {
+    const onlyNodes = circuit
+      .map(({ nodes }) => Object.keys(nodes).map((key) => nodes[key].value))
+      .flat()
+      .filter((value) => !!Number(value))
+      .sort();
+
+    return Array.from(new Set(onlyNodes));
   }
 
   #circuitTypeToNetlist(circuit: CircuitType) {
@@ -59,7 +76,75 @@ export class Simulation {
     return voltageNodes;
   }
 
-  get hasCircuit() {
-    return !!this.#netlist;
+  async getPulseSimulationNodes() {
+    const NODES_HEADER_SIZE = 3;
+    // const netlist = this.#netlist.concat("\n.op\n.end");
+
+    const netlist = `Basic RC circuit
+    r 1 2 1.0
+    c 2 0 1.0
+    vin 1 0  pulse (0 1) ac 1
+
+    .tran  0.1 7.0
+    `;
+
+    const pulseCommand = `
+    .control
+    version
+    run
+    *print ${this.#nodes.map((node) => `v(${node})`).join(" ")}
+    print v(1) v(2)
+    .endc
+    .end
+    `;
+
+    const netlistSimulation = netlist.concat(pulseCommand);
+
+    console.log({ netlistSimulation });
+
+    this.#resultData = await this.#run(netlistSimulation);
+
+    console.log({ resultCircuit: this.#resultData });
+
+    const indeValuesStart = this.#resultData.findIndex((value) => {
+      return value.startsWith("Index");
+    });
+
+    const resultsStart = this.#resultData.slice(indeValuesStart + 2);
+
+    const indexNodeVoltaEnd = resultsStart.findIndex((value) =>
+      value.startsWith("DONE")
+    );
+
+    const onlyNodes = resultsStart.splice(0, indexNodeVoltaEnd);
+
+    const nodesMappedValues = onlyNodes
+      .filter(
+        (value) =>
+          !(
+            value.startsWith("Index") ||
+            value.startsWith("----") ||
+            value.startsWith("\f")
+          )
+      )
+      .map((line) => {
+        const [index, time, ...nodesValues] = line.split("\t");
+        return {
+          time,
+          ...nodesValues
+            .filter((value) => !!value)
+            .reduce(
+              (acc, current, i) => ({
+                ...acc,
+                [`v(${i + 1})`]: current,
+              }),
+              {}
+            ),
+        };
+      });
+
+    console.log({ nodesMappedValues });
+
+    return nodesMappedValues;
   }
 }
