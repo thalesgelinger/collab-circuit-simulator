@@ -1,40 +1,42 @@
-interface ComponentType {
-  type: string;
-  ref: string;
-  value: string;
-  nodes: {
-    positive: string;
-    negative: string;
-  };
-}
+import { ToolsTypes } from "./../@types/ToolsTypes";
+import { ComponentType } from "../@types";
 
-type CircuitType = ComponentType[];
+export type CircuitType = ComponentType[];
 
 export class Simulation {
   #resultData: string[] = [];
+  #netlist = "";
 
-  async start(circuit: CircuitType) {
-    const netlist = this.#circuitTypeToNetlist(circuit);
-    const netlistResult = await window.runSpice(netlist);
-    this.#resultData = netlistResult;
+  constructor(circuitFull: CircuitType) {
+    const removeTools = ({ componentType }: ComponentType) => {
+      return !["voltimeter"].includes(componentType);
+    };
+    const circuit = circuitFull.filter(removeTools);
+    this.#netlist = this.#circuitTypeToNetlist(circuit);
   }
 
-  getData() {
-    return this.#resultData;
+  async #run(netlist: string) {
+    const netlistResult = await window.runSpice(netlist);
+    return netlistResult;
   }
 
   #circuitTypeToNetlist(circuit: CircuitType) {
     const netlist = circuit
       .map((component) => {
-        const { ref, value, nodes } = component;
-        return [ref, nodes.positive, nodes.negative, value].join(" ");
+        const { name, value, nodes } = component;
+        return [name, nodes.positive.value, nodes.negative.value, value].join(
+          " "
+        );
       })
-      .join("\n")
-      .concat("\n.op\n.end");
+      .join("\n");
     return `Circuit \n ${netlist}`;
   }
 
-  getVoltageNodes() {
+  async getVoltageNodes() {
+    const NODES_HEADER_SIZE = 3;
+    const netlist = this.#netlist.concat("\n.op\n.end");
+    this.#resultData = await this.#run(netlist);
+
     const indexNodeVoltageStart = this.#resultData.findIndex((value) => {
       return value.startsWith("Node") || value.endsWith("Voltage");
     });
@@ -42,8 +44,6 @@ export class Simulation {
     const resultStartsOnNode = this.#resultData.slice(indexNodeVoltageStart);
 
     const indexNodeVoltaEnd = resultStartsOnNode.findIndex((value) => !value);
-
-    const NODES_HEADER_SIZE = 3;
 
     const onlyNodes = resultStartsOnNode
       .splice(NODES_HEADER_SIZE, indexNodeVoltaEnd - NODES_HEADER_SIZE)
@@ -57,5 +57,9 @@ export class Simulation {
       }, {} as { [key: string]: string });
 
     return voltageNodes;
+  }
+
+  get hasCircuit() {
+    return !!this.#netlist;
   }
 }

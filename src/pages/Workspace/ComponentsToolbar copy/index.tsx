@@ -45,21 +45,18 @@ export const ComponentsToolbar = ({
   const componentsUseful: ComponentType[] = [
     {
       componentType: "resistor",
-      image: components.resistor,
+      image: components.dc_source,
       value: "100",
-      angle: 0,
     } as ComponentType,
     {
       componentType: "dc_source",
-      image: components.dc_source,
+      image: components.resistor,
       value: "5",
-      angle: 0,
     } as ComponentType,
     {
-      componentType: "capacitor",
+      componentType: "resistor",
       image: components.capacitor,
-      value: "1u",
-      angle: 0,
+      value: "100",
     } as ComponentType,
   ];
 

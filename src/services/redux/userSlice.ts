@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { User } from "firebase/auth";
 
-export const slice = createSlice({
+export const userSlice = createSlice({
   name: "user",
   initialState: {
     user: {} as User,
@@ -19,6 +19,6 @@ export const slice = createSlice({
   },
 });
 
-export const { changeUser, logout } = slice.actions;
+export const { changeUser, logout } = userSlice.actions;
 
-export default slice.reducer;
+export default userSlice.reducer;

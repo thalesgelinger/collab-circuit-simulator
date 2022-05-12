@@ -7,15 +7,25 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mui/icons-material": "^5.6.2",
     "@reduxjs/toolkit": "1.8.0",
     "as-bind": "^0.8.2",
     "chart.js": "^3.7.1",
     "firebase": "9.6.4",
     "konva": "^8.3.3",
+<<<<<<< HEAD
     "react": "17.0.2",
     "react-chartjs-2": "^4.1.0",
     "react-dom": "17.0.2",
+=======
+    "react": "^18.1.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
+    "react-dom": "^18.1.0",
+    "react-draggable": "^4.4.5",
+>>>>>>> b9413e80527f24ef6f1581c4c50fb8d0daf78ba7
     "react-konva": "^17.0.2-5",
+    "react-konva-utils": "^0.3.0",
     "react-redux": "7.2.6",
     "react-router-dom": "6.2.2",
     "react-wasm": "^1.0.1",

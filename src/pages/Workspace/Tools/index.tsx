@@ -3,7 +3,7 @@ import { Rect } from "react-konva";
 import { ComponentType } from "../../../@types";
 import { useState } from "react";
 import { DraggableComponent } from "../../../components";
-import { components } from "../../../assets/simulation/components";
+import { tools } from "../../../assets/simulation/tools";
 
 export type DraggableComponentType = KonvaEventObject<DragEvent> &
   ComponentType;
@@ -22,7 +22,7 @@ const TOOLBAR_DIMENSIONS = {
   marginTop: window.innerHeight * 0.1,
 };
 
-const ToolbarShape = () => {
+const ToolsShape = () => {
   return (
     <Rect
       x={window.innerWidth - TOOLBAR_DIMENSIONS.width}
@@ -35,7 +35,7 @@ const ToolbarShape = () => {
   );
 };
 
-export const ComponentsToolbar = ({
+export const Tools = ({
   onComponentDragStart,
   onComponentDragMove,
   onComponentDragEnd,
@@ -44,21 +44,9 @@ export const ComponentsToolbar = ({
 
   const componentsUseful: ComponentType[] = [
     {
-      componentType: "resistor",
-      image: components.resistor,
-      value: "100",
-      angle: 0,
-    } as ComponentType,
-    {
-      componentType: "dc_source",
-      image: components.dc_source,
-      value: "5",
-      angle: 0,
-    } as ComponentType,
-    {
-      componentType: "capacitor",
-      image: components.capacitor,
-      value: "1u",
+      componentType: "voltimeter",
+      image: tools.voltimeter,
+      value: "0",
       angle: 0,
     } as ComponentType,
   ];
@@ -91,7 +79,7 @@ export const ComponentsToolbar = ({
 
   return (
     <>
-      <ToolbarShape />
+      <ToolsShape />
       {draggableComponents.map((component, i) => (
         <DraggableComponent
           componentData={component}

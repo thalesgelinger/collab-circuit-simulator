@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import { Line } from "react-konva";
+import { ComponentType } from "../../../@types";
 
 export interface Wire {
   from: Vector2d;
@@ -24,9 +25,10 @@ interface WiresHandle {
   wires: number[][];
   setWires: Dispatch<SetStateAction<number[][]>>;
   points: number[];
+  isConnectingComponents: boolean;
 }
 
-export const Wires = forwardRef<WiresHandle, WiresProps>((props, ref) => {
+export const Wires = forwardRef<WiresHandle, WiresProps>((_, ref) => {
   const [wire, setWire] = useState<Wire>({} as Wire);
   const [wires, setWires] = useState<number[][]>([]);
 
@@ -38,11 +40,8 @@ export const Wires = forwardRef<WiresHandle, WiresProps>((props, ref) => {
     wires,
     setWires,
     points,
+    isConnectingComponents,
   }));
-
-  useEffect(() => {
-    console.log({ wire });
-  }, [wire]);
 
   useEffect(() => {
     document.addEventListener("keydown", (event) => {
@@ -51,6 +50,10 @@ export const Wires = forwardRef<WiresHandle, WiresProps>((props, ref) => {
       }
     });
   }, []);
+
+  useEffect(() => {
+    console.log({ wires });
+  }, [wires]);
 
   const getCurvePoint = (from: Vector2d, to: Vector2d) => {
     if (!hasPoints(from, to)) {
@@ -97,6 +100,9 @@ export const Wires = forwardRef<WiresHandle, WiresProps>((props, ref) => {
             stroke="#000"
             fill="#000"
             strokeWidth={3}
+            onClick={() => {
+              console.log("Wire CLicked");
+            }}
           />
         );
       })}
