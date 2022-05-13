@@ -140,10 +140,15 @@ export const Workspace = () => {
 
   const getComponentNameByType = (type: string) => {
     const types = {
+      dc_source: "Vdc",
+      ac_source: "Vac",
+      pulse_source: "V",
       resistor: "R",
-      dc_source: "V",
       capacitor: "C",
+      inductor: "L",
       voltimeter: "VOLTMETER_",
+      ohmmimeter: "OHMMIMETER",
+      currentmeter: "CURRENT_",
     } as { [key: string]: string };
 
     const numberOfThisComponentTypeInCircuit =
@@ -694,6 +699,10 @@ export const Workspace = () => {
           <Layer>
             <Circuit
               components={circuit}
+              onCircuitUpdate={(ckt) => {
+                console.log("UPDATE CIRCUIT:", ckt);
+                setCircuit(ckt);
+              }}
               onComponentMoving={handleDragMove}
               onComponentDroped={handleDragRelease}
               onClickComponent={handleComponentClick}

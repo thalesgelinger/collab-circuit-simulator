@@ -49,6 +49,24 @@ export const Tools = ({
       value: "0",
       angle: 0,
     } as ComponentType,
+    {
+      componentType: "currentmeter",
+      image: tools.currentmeter,
+      value: "0",
+      angle: 0,
+    } as ComponentType,
+    {
+      componentType: "ohmmimeter",
+      image: tools.ohmmimeter,
+      value: "0",
+      angle: 0,
+    } as ComponentType,
+    {
+      componentType: "osciloscope",
+      image: tools.osciloscope,
+      value: "0",
+      angle: 0,
+    } as ComponentType,
   ];
 
   const [draggableComponents, setDraggableComponents] =

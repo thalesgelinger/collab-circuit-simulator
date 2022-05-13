@@ -10,11 +10,17 @@ interface CircuitProps {
   ) => void;
   onComponentDroped: (component: ComponentType) => void;
   onClickComponent: (component: ComponentType) => void;
+  onCircuitUpdate: (component: ComponentType[]) => void;
 }
 
 export const Circuit = (props: CircuitProps) => {
-  const { components, onComponentMoving, onComponentDroped, onClickComponent } =
-    props;
+  const {
+    components,
+    onComponentMoving,
+    onComponentDroped,
+    onClickComponent,
+    onCircuitUpdate,
+  } = props;
 
   const handleComponentMove =
     (component: ComponentType) => (event: KonvaEventObject<DragEvent>) => {
@@ -26,10 +32,10 @@ export const Circuit = (props: CircuitProps) => {
 
   return (
     <>
-      {components.map((component, i) => {
+      {components.map((component) => {
         return (
           <DraggableComponent
-            key={i}
+            key={component.id}
             componentData={component}
             size={20}
             x={component.position.x}
@@ -38,6 +44,7 @@ export const Circuit = (props: CircuitProps) => {
             onDragEnd={handleComponentDrop(component)}
             backToOrigin={false}
             onClickComponent={onClickComponent}
+            onCircuitUpdate={onCircuitUpdate}
           />
         );
       })}

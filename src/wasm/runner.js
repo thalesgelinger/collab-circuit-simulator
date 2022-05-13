@@ -34,6 +34,11 @@ const delay = (time) => new Promise((res) => setTimeout(res, time));
 var runSpice = async (netlist) => {
   netlistGlobal = netlist;
   const script = document.createElement("script");
+
+  if (!!script) {
+    script.remove();
+  }
+
   script.src = "./src/wasm/ngspice.js";
   script.type = "text/javascript";
   document.body.appendChild(script);
