@@ -720,9 +720,7 @@ export const Workspace = () => {
           />
         </Provider>
       </Stage>
-<<<<<<< HEAD
       <Oscilloscope />
-=======
 
       <div className={styles.toolsSelector}>
         <button onClick={() => setShowTools(true)} disabled={showTools}>
@@ -732,7 +730,6 @@ export const Workspace = () => {
           components
         </button>
       </div>
->>>>>>> b9413e80527f24ef6f1581c4c50fb8d0daf78ba7
     </div>
   );
 };
