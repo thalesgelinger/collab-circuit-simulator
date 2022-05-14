@@ -23,6 +23,8 @@ import {
   ActionTypes,
   updateCircuit,
 } from "../../services/redux/simulationSlice";
+import { Html } from "react-konva-utils";
+import { ProviderReturn } from "./ProviderReturn";
 
 type WiresHandle = ElementRef<typeof Wires>;
 
@@ -32,6 +34,8 @@ type ActionsType = {
 
 export const Workspace = () => {
   const [circuit, setCircuit] = useState<ComponentType[]>([]);
+  const [state, setState] = useState<RootState>({} as RootState);
+
   const blockSnapSize = 20;
   const snapPosition = useSnapToGrid(blockSnapSize);
 
@@ -140,8 +144,8 @@ export const Workspace = () => {
 
   const getComponentNameByType = (type: string) => {
     const types = {
-      dc_source: "Vdc",
-      ac_source: "Vac",
+      dc_source: "V",
+      ac_source: "V",
       pulse_source: "V",
       resistor: "R",
       capacitor: "C",
@@ -694,6 +698,9 @@ export const Workspace = () => {
       >
         <Provider store={store}>
           <Layer>
+            <ProviderReturn returnState={setState} />
+          </Layer>
+          <Layer>
             <Grid blockSnapSize={blockSnapSize} />
           </Layer>
           <Layer>
@@ -729,7 +736,10 @@ export const Workspace = () => {
           />
         </Provider>
       </Stage>
-      <Oscilloscope />
+
+      {/* {!!state?.simulation?.simulation && (
+        <Oscilloscope simulation={state!.simulation.simulation} />
+      )} */}
 
       <div className={styles.toolsSelector}>
         <button onClick={() => setShowTools(true)} disabled={showTools}>

@@ -1,17 +1,16 @@
 import { CircuitType, Simulation } from "./../../models/Simulation";
 import { createSlice } from "@reduxjs/toolkit";
-
-export type ActionTypes = "edit" | "remove" | "rotate" | "";
+import { Wire } from "../../pages/Workspace/Wires";
 
 interface InitialState {
   simulation: Simulation;
   circuit: CircuitType;
-  action: ActionTypes;
+  wires: number[][];
+  wire: Wire;
 }
 
 const initialState = {
   circuit: [] as CircuitType,
-  action: "",
 } as InitialState;
 
 export const simulationSlice = createSlice({
@@ -24,9 +23,16 @@ export const simulationSlice = createSlice({
     updateCircuit(state, { payload: circuit }) {
       state.circuit = circuit;
     },
+    updateWires(state, { payload: wires }) {
+      state.wires = wires;
+    },
+    updateWire(state, { payload: wire }) {
+      state.wire = wire;
+    },
   },
 });
 
-export const { addCircuit, updateCircuit } = simulationSlice.actions;
+export const { addCircuit, updateCircuit, updateWire, updateWires } =
+  simulationSlice.actions;
 
 export default simulationSlice.reducer;

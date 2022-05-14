@@ -1,68 +1,43 @@
-let netlistGlobal;
-let results = [];
+const delay = (time) => new Promise((res) => setTimeout(res, time));
+
+function updateResults(value) {
+  const asString = localStorage.getItem("spice");
+  const currentData = !!asString ? JSON.parse(asString) : [];
+  localStorage.setItem("spice", JSON.stringify([...currentData, value]));
+}
+
 Module = {
   arguments: ["-b", "test.cir"],
 
   preRun: [
     () => {
       console.log("from html");
-      // https://emscripten.org/docs/api_reference/Filesystem-API.html#filesystem-api
       FS.writeFile("/test.cir", netlistGlobal);
-      // FS.writeFile("/modelcard.nmos", strModelNmos);
-      // FS.writeFile("/modelcard.pmos", strModelPmos);
-
-      // FS.writeFile("/test_bsim.cir", strBsimComprt);
-      //console.log(FS.readFile("/test.cir", { encoding: "utf8" }));
     },
   ],
   postRun: [
     () => {
-      results.push("DONE");
+      updateResults("DONE");
     },
   ],
   print: (function () {
     return function (text) {
       if (arguments.length > 1)
         text = Array.prototype.slice.call(arguments).join(" ");
-      results.push(text);
+
+      updateResults(text);
     };
   })(),
 };
 
-const delay = (time) => new Promise((res) => setTimeout(res, time));
+async function runSpice() {
+  createAndAppendScript("spice", "./src/wasm/ngspice.js");
+}
 
-var runSpice = async (netlist) => {
-  netlistGlobal = netlist;
+function createAndAppendScript(name, path) {
   const script = document.createElement("script");
-
-  if (!!script) {
-    script.remove();
-  }
-
-  script.src = "./src/wasm/ngspice.js";
+  script.id = name;
+  script.src = path;
   script.type = "text/javascript";
   document.body.appendChild(script);
-
-  const getResults = async () => {
-    return new Promise(async (res, rej) => {
-      if (results[results.length - 1] === "DONE") {
-        res([results, false]);
-      } else {
-        await delay(100);
-        res([null, true]);
-      }
-    });
-  };
-
-  const MAX_CALLS = 20;
-  let maxCalls = 0;
-  while (results[results.length - 1] !== "DONE" || maxCalls === MAX_CALLS) {
-    const [resultsReady, error] = await getResults();
-
-    if (!error) {
-      return resultsReady;
-    }
-    maxCalls++;
-  }
-  return results;
-};
+}

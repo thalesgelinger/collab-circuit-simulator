@@ -10,7 +10,12 @@ import {
   useState,
 } from "react";
 import { Line } from "react-konva";
+import { useDispatch } from "react-redux";
 import { ComponentType } from "../../../@types";
+import {
+  updateWire,
+  updateWires,
+} from "../../../services/redux/simulationSlice";
 
 export interface Wire {
   from: Vector2d;
@@ -34,6 +39,8 @@ export const Wires = forwardRef<WiresHandle, WiresProps>((_, ref) => {
 
   const isConnectingComponents = !!wire?.from;
 
+  const dispatch = useDispatch();
+
   useImperativeHandle(ref, () => ({
     wire,
     setWire,
@@ -52,8 +59,11 @@ export const Wires = forwardRef<WiresHandle, WiresProps>((_, ref) => {
   }, []);
 
   useEffect(() => {
-    console.log({ wires });
+    dispatch(updateWires(wires));
   }, [wires]);
+  useEffect(() => {
+    dispatch(updateWire(wire));
+  }, [wire]);
 
   const getCurvePoint = (from: Vector2d, to: Vector2d) => {
     if (!hasPoints(from, to)) {

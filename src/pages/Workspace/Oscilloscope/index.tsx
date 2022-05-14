@@ -12,6 +12,10 @@ import {
 import { Line } from "react-chartjs-2";
 
 import styles from "./styles.module.scss";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../services/redux/store";
+import { Simulation } from "../../../models/Simulation";
+import Konva from "konva";
 
 ChartJS.register(
   CategoryScale,
@@ -23,33 +27,65 @@ ChartJS.register(
   Legend
 );
 
-export const Oscilloscope = () => {
+type OscilloscopeProps = {
+  simulation: Simulation;
+};
+
+export const Oscilloscope = ({ simulation }: OscilloscopeProps) => {
   const [oscilloscopeOn, setOscilloscopeOn] = useState(true);
   const [chartData, setChartData] = useState({
     datasets: [],
   });
   const [chartOptions, setChartOptions] = useState({});
-  const data = {
-    labels: [1, 2, 3, 4],
-    datasets: [
-      {
-        label: "Dataset 1",
-        data: [1, 2, 1, 3],
-        borderColor: "rgb(255, 99, 132)",
-        backgroundColor: "rgba(255, 99, 132, 0.5)",
+
+  const [dataset, setData] = useState<any[]>([]);
+
+  //FIXME: solve issue about running simulation more than once
+  // useEffect(() => {
+  //   if (!!simulation) {
+  //     simulation?.getPulseSimulationNodes().then((wave) => {
+  //       console.log({ wave });
+  //       setData(wave);
+  //     });
+  //   }
+  // }, [simulation]);
+
+  const formatDatasetToGraph = (dataset: any[]) => {
+    if (!dataset.length) {
+      return [
+        {
+          label: "Placeholder",
+          data: [],
+          borderColor: Konva.Util.getRandomColor(),
+          backgroundColor: Konva.Util.getRandomColor(),
+          yAxisID: "y",
+        },
+      ];
+    }
+
+    const { time, ...nodes } = dataset[0];
+
+    const datasetFormatted = Object.keys(nodes).map((key) => {
+      const color = Konva.Util.getRandomColor();
+
+      return {
+        label: key,
+        data: dataset.map((s) => s[key]),
+        borderColor: color,
+        backgroundColor: color,
         yAxisID: "y",
-      },
-      // {
-      //   label: "Dataset 2",
-      //   data: ["January", "February", "March", "April", "May", "June", "July"],
-      //   borderColor: "rgb(53, 162, 235)",
-      //   backgroundColor: "rgba(53, 162, 235, 0.5)",
-      //   yAxisID: "y1",
-      // },
-    ],
+      };
+    });
+    return datasetFormatted;
+  };
+
+  const data = {
+    labels: dataset.map((s) => s.time),
+    datasets: formatDatasetToGraph(dataset),
   };
 
   useEffect(() => {
+    console.log({ data });
     setChartData(data);
 
     setChartOptions({
@@ -81,7 +117,7 @@ export const Oscilloscope = () => {
         },
       },
     });
-  }, []);
+  }, [dataset]);
 
   return (
     <section className={styles.container}>

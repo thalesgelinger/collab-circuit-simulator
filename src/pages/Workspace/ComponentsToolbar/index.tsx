@@ -58,7 +58,7 @@ export const ComponentsToolbar = ({
     {
       componentType: "pulse_source",
       image: components.pulse_source,
-      value: "0",
+      value: "PULSE (0 0 0 0 0 0 0 0)",
       angle: 90,
     } as ComponentType,
     {

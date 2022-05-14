@@ -3,10 +3,22 @@ import { ComponentType } from "../@types";
 
 export type CircuitType = ComponentType[];
 
+const delay = (time: number) => new Promise((res) => setTimeout(res, time));
+
+/*let results = [];
+
+    const response = await Spice({
+      netlist,
+      output: results,
+    });
+
+    console.log({ response });*/
+
 export class Simulation {
-  #resultData: string[] = [];
   #netlist = "";
   #nodes: number[] = [];
+  #isRunning = false;
+  #isRunningSimulation = false;
 
   constructor(circuitFull: CircuitType) {
     const removeTools = ({ componentType }: ComponentType) => {
@@ -15,7 +27,6 @@ export class Simulation {
     this.#nodes = this.#extractNodes(circuitFull);
     const circuit = circuitFull.filter(removeTools);
     this.#netlist = this.#circuitTypeToNetlist(circuit);
-    // this.getPulseSimulationNodes();
   }
 
   get hasCircuit() {
@@ -23,8 +34,64 @@ export class Simulation {
   }
 
   async #run(netlist: string) {
-    const netlistResult = await window.runSpice(netlist);
-    return netlistResult;
+    localStorage.setItem("netlist", netlist);
+    window.netlistGlobal = netlist;
+
+    window.runSpice();
+
+    const getData = async (): Promise<string[]> => {
+      const resultString = localStorage.getItem("spice");
+      console.log("BATATA");
+      const results = !!resultString ? JSON.parse(resultString) : [];
+
+      if (results[results.length - 1] === "DONE") {
+        const script = document.querySelector("#spice");
+        document.body.removeChild(script);
+
+        return Promise.resolve(results);
+      }
+      await delay(200);
+      return await getData();
+    };
+
+    const response = await getData();
+    localStorage.setItem("spice", JSON.stringify([]));
+    return response;
+
+    // let results: string[] = [];
+
+    // window.observe = (value: string) => {
+    //   console.log({ value });
+    //   results.push(value);
+    //   if (value === "DONE") {
+    //     console.log("DEU");
+    //     localStorage.setItem("done", JSON.stringify(true));
+    //   }
+    // };
+
+    // const response = await new Promise((res) => {
+    //   const interval = setInterval(() => {
+    //     console.log("BATATA");
+    //     if (JSON.parse(localStorage.getItem("done"))) {
+    //       console.log("Vai limpar");
+    //       clearInterval(interval);
+    //       res(results);
+    //     }
+    //   }, 500);
+    // });
+
+    // if (JSON.parse(localStorage.getItem("done"))) {
+    //   console.log("FOI ess naba?");
+    //   window.observe = null;
+    //   window.netlistGlobal = "";
+    //   const script = document.querySelector("#spice");
+    //   document.body.removeChild(script);
+    // }
+
+    // console.log("ACABOU:", { response, done: this.#isRunningSimulation });
+
+    // results = [];
+    return response;
   }
 
   #extractNodes(circuit: CircuitType) {
@@ -50,15 +117,26 @@ export class Simulation {
   }
 
   async getVoltageNodes() {
-    const NODES_HEADER_SIZE = 3;
-    const netlist = this.#netlist.concat("\n.op\n.end");
-    this.#resultData = await this.#run(netlist);
+    console.log("RODOU o getVoltageNodes:", this.#isRunning);
 
-    const indexNodeVoltageStart = this.#resultData.findIndex((value) => {
+    if (this.#isRunning) {
+      await delay(100);
+      return await this.getVoltageNodes();
+    }
+
+    this.#isRunning = true;
+    const NODES_HEADER_SIZE = 3;
+    const netlist = `${this.#netlist}\n.op\n.end`;
+    console.log("FOI AQui");
+    const resultData = await this.#run(netlist);
+
+    console.log({ resultData });
+
+    const indexNodeVoltageStart = resultData.findIndex((value) => {
       return value.startsWith("Node") || value.endsWith("Voltage");
     });
 
-    const resultStartsOnNode = this.#resultData.slice(indexNodeVoltageStart);
+    const resultStartsOnNode = resultData.slice(indexNodeVoltageStart);
 
     const indexNodeVoltaEnd = resultStartsOnNode.findIndex((value) => !value);
 
@@ -73,19 +151,28 @@ export class Simulation {
         return acc;
       }, {} as { [key: string]: string });
 
+    this.#isRunning = false;
     return voltageNodes;
   }
 
   async getPulseSimulationNodes() {
-    const NODES_HEADER_SIZE = 3;
     // const netlist = this.#netlist.concat("\n.op\n.end");
+    console.log("RODOU o getPulseSimulationNodes");
 
-    const netlist = `Basic RC circuit
-    r 1 2 1.0
-    c 2 0 1.0
-    vin 1 0  pulse (0 1) ac 1
+    if (this.#isRunning) {
+      return [];
+    }
 
-    .tran  0.1 7.0
+    this.#isRunning = true;
+
+    const netlist = `.title dual rc ladder
+    R1 int in 10k
+    V1 in 0 PULSE (0 5 1u 1u 1u 1 1)
+    R2 out int 1k
+    C1 int 0 1u
+    C2 out 0 100n
+
+    .tran 100u 50m
     `;
 
     const pulseCommand = `
@@ -93,24 +180,24 @@ export class Simulation {
     version
     run
     *print ${this.#nodes.map((node) => `v(${node})`).join(" ")}
-    print v(1) v(2)
+    print in int out
     .endc
     .end
     `;
 
-    const netlistSimulation = netlist.concat(pulseCommand);
+    const netlistSimulation = `${netlist}\n${pulseCommand}`;
 
     console.log({ netlistSimulation });
 
-    this.#resultData = await this.#run(netlistSimulation);
+    const resultData = await this.#run(netlistSimulation);
 
-    console.log({ resultCircuit: this.#resultData });
+    console.log({ resultData });
 
-    const indeValuesStart = this.#resultData.findIndex((value) => {
+    const indeValuesStart = resultData.findIndex((value) => {
       return value.startsWith("Index");
     });
 
-    const resultsStart = this.#resultData.slice(indeValuesStart + 2);
+    const resultsStart = resultData.slice(indeValuesStart + 2);
 
     const indexNodeVoltaEnd = resultsStart.findIndex((value) =>
       value.startsWith("DONE")
@@ -145,6 +232,7 @@ export class Simulation {
 
     console.log({ nodesMappedValues });
 
+    this.#isRunning = false;
     return nodesMappedValues;
   }
 }

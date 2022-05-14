@@ -17,6 +17,7 @@ import { RootState } from "../../services/redux/store";
 import { Position } from "../../@types/ComponentType";
 import { updateCircuit } from "../../services/redux/simulationSlice";
 import { DefaultComponentForm } from "./DefaultComponentForm";
+import { PulseComponentForm } from "./PulseComponentForm";
 
 interface DraggableComponentProps {
   size: number;
@@ -58,15 +59,15 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
   const [component, setComponent] = useState(componentData);
 
-  const { simulation, circuit } = useSelector(
+  const { simulation, circuit, wire, wires } = useSelector(
     (state: RootState) => state.simulation
   );
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    console.log({ simulation, circuit });
-  }, [simulation, circuit]);
+    console.log({ simulation, circuit, wire, wires });
+  }, [simulation, circuit, wire, wires]);
 
   const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
     if (!!onDragEnd) {
@@ -133,6 +134,32 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
     });
   };
 
+  const getForm = (formType: string) => {
+    const forms = {
+      pulse_source: () => (
+        <PulseComponentForm
+          key={componentData!.id}
+          componentData={componentData!}
+          position={{ x, y }}
+          onSubmit={submitNewLabel}
+        />
+      ),
+    };
+
+    if (forms?.[formType]) {
+      return forms[formType]();
+    }
+
+    return (
+      <DefaultComponentForm
+        key={componentData!.id}
+        componentData={componentData!}
+        position={{ x, y }}
+        onSubmit={submitNewLabel}
+      />
+    );
+  };
+
   return (
     <>
       {backToOrigin && (
@@ -185,14 +212,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
         </>
       )}
 
-      {editingLabel && (
-        <DefaultComponentForm
-          key={componentData!.id}
-          componentData={componentData!}
-          position={{ x, y }}
-          onSubmit={submitNewLabel}
-        />
-      )}
+      {editingLabel && getForm(componentData?.componentType)}
 
       {measureValue !== "" && (
         <Html
