@@ -14,7 +14,7 @@ import { Oscilloscope } from "./Oscilloscope";
 import { useAuth } from "../../hooks/useAuth";
 import { app } from "../../services/firebase";
 import { getDatabase, onValue, ref, set } from "firebase/database";
-import { Position } from "../../@types/ComponentType";
+import { ComponentsKeys, Position } from "../../@types/ComponentType";
 import { Tools } from "./Tools";
 import { Toolbar } from "./Toolbar";
 import { Provider, useDispatch, useSelector } from "react-redux";
@@ -45,7 +45,7 @@ export const Workspace = () => {
 
   const dispatch = useDispatch();
 
-  const [nodes, setNodes] = useState(0);
+  const [nodes, setNodes] = useState(1);
 
   const [action, setAction] = useState("");
 
@@ -130,7 +130,7 @@ export const Workspace = () => {
           },
         },
         negative: {
-          value: "",
+          value: isSource(event.componentType) ? "0" : "",
           position: {
             x: event.target.x() + blockSnapSize * 2,
             y: event.target.y() + blockSnapSize,
@@ -141,6 +141,8 @@ export const Workspace = () => {
     console.log({ component });
     setCircuit([component, ...circuit]);
   };
+
+  const isSource = (type: string) => type.endsWith("_source");
 
   const getComponentNameByType = (type: string) => {
     const types = {

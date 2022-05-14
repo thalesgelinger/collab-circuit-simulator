@@ -5,7 +5,7 @@ export interface Position {
   y: number;
 }
 
-type ComponentsKeys = keyof ComponentsTypes | keyof ToolsTypes;
+export type ComponentsKeys = keyof ComponentsTypes | keyof ToolsTypes;
 interface ComponentsTypes {
   resistor: ResistorNodes;
   capacitor: CapacitorNodes;
