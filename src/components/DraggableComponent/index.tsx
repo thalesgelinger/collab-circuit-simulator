@@ -46,8 +46,6 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
     onCircuitUpdate,
   } = props;
 
-  console.log({ componentData });
-
   const ref = useRef<any>();
   const textRef = useRef<ElementRef<typeof Text>>(null);
 
@@ -62,12 +60,6 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
   const { simulation, circuit, wire, wires } = useSelector(
     (state: RootState) => state.simulation
   );
-
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    console.log({ simulation, circuit, wire, wires });
-  }, [simulation, circuit, wire, wires]);
 
   const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
     if (!!onDragEnd) {

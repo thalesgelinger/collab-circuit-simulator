@@ -1,17 +1,19 @@
 import { CircuitType, Simulation } from "./../../models/Simulation";
 import { createSlice } from "@reduxjs/toolkit";
-import { Wire } from "../../pages/Workspace/Wires";
+import { CooworkerWire, Wire } from "../../pages/Workspace/Wires";
+import { Position } from "../../@types/ComponentType";
 
-interface InitialState {
+export interface SimulationState {
   simulation: Simulation;
   circuit: CircuitType;
   wires: number[][];
-  wire: Wire;
+  cooworkerWires: CooworkerWire[];
+  intersections: Position[];
 }
 
 const initialState = {
   circuit: [] as CircuitType,
-} as InitialState;
+} as SimulationState;
 
 export const simulationSlice = createSlice({
   name: "simulation",
@@ -26,13 +28,21 @@ export const simulationSlice = createSlice({
     updateWires(state, { payload: wires }) {
       state.wires = wires;
     },
-    updateWire(state, { payload: wire }) {
-      state.wire = wire;
+    updateIntersection(state, { payload: intersections }) {
+      state.intersections = intersections;
+    },
+    updateCooworkerWires(state, { payload: cooworkerWires }) {
+      state.cooworkerWires = cooworkerWires;
     },
   },
 });
 
-export const { addCircuit, updateCircuit, updateWire, updateWires } =
-  simulationSlice.actions;
+export const {
+  addCircuit,
+  updateCircuit,
+  updateWires,
+  updateIntersection,
+  updateCooworkerWires,
+} = simulationSlice.actions;
 
 export default simulationSlice.reducer;

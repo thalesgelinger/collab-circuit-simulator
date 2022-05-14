@@ -4244,7 +4244,7 @@ var run = (args) => {
     if (shouldRunNow) callMain(args);
     postRun();
   }
-  doRun()
+  doRun();
 };
 Module["run"] = run;
 function exit(status, implicit) {
@@ -4272,4 +4272,4 @@ if (Module["preInit"]) {
 }
 var shouldRunNow = true;
 if (Module["noInitialRun"]) shouldRunNow = false;
-run()
+run();

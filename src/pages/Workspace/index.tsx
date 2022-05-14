@@ -1,4 +1,11 @@
-import { ElementRef, useCallback, useEffect, useRef, useState } from "react";
+import {
+  ElementRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Circle, Layer, Stage } from "react-konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { Vector2d } from "konva/lib/types";
@@ -21,7 +28,9 @@ import { Provider, useDispatch, useSelector } from "react-redux";
 import { RootState, store } from "../../services/redux/store";
 import {
   ActionTypes,
+  SimulationState,
   updateCircuit,
+  updateIntersection,
 } from "../../services/redux/simulationSlice";
 import { Html } from "react-konva-utils";
 import { ProviderReturn } from "./ProviderReturn";
@@ -30,6 +39,14 @@ type WiresHandle = ElementRef<typeof Wires>;
 
 type ActionsType = {
   [key: string]: (evt: KonvaEventObject<MouseEvent>) => void;
+};
+
+interface SnapshotType extends SimulationState {
+  editedBy: number;
+}
+
+export const compareObjects = (obj1: object, obj2: object) => {
+  return JSON.stringify(obj1) === JSON.stringify(obj2);
 };
 
 export const Workspace = () => {
@@ -53,26 +70,96 @@ export const Workspace = () => {
 
   // const { user } = useAuth();
 
-  // useEffect(() => {
-  //   if (circuit.length) {
-  //     const db = getDatabase();
-  //     set(ref(db, "circuits"), { circuit });
-  //   }
-  // }, [circuit]);
+  const userId = useMemo(() => Math.random(), []);
+
+  const lastEdited = useRef(userId);
+
+  const db = getDatabase(app);
 
   useEffect(() => {
     console.log({ circuit });
     dispatch(updateCircuit(circuit));
+    if (!!state.simulation) {
+      const { simulation, ...rest } = state.simulation;
+
+      if (!compareObjects(rest.circuit, circuit)) {
+        set(ref(db, "circuits"), {
+          ...rest,
+          circuit,
+          editedBy: lastEdited.current,
+        });
+        lastEdited.current = userId;
+      }
+    }
   }, [circuit]);
 
-  // useEffect(() => {
-  //   const db = getDatabase(app);
-  //   const starCountRef = ref(db, "circuits");
-  //   onValue(starCountRef, (snapshot) => {
-  //     const { circuit } = snapshot.val();
-  //     setCircuit(circuit);
-  //   });
-  // }, []);
+  useEffect(() => {
+    dispatch(updateIntersection(intersections));
+    if (!!state.simulation) {
+      const { simulation, ...rest } = state.simulation;
+
+      if (!compareObjects(rest.intersections, intersections)) {
+        set(ref(db, "circuits"), {
+          ...rest,
+          intersections,
+          editedBy: lastEdited.current,
+        });
+        lastEdited.current = userId;
+      }
+    }
+  }, [intersections]);
+
+  useEffect(() => {
+    const circuits = ref(db, "circuits");
+    onValue(circuits, (snapshot) => {
+      const response = snapshot.val() as SnapshotType;
+      const currentUserDidTheLastChange = response?.editedBy === userId;
+
+      const isWiresDifferent = !compareObjects(
+        response?.wires,
+        wireRef?.current?.wires
+      );
+      const shouldUpdateWires = !!response?.wires?.length && isWiresDifferent;
+
+      const isIntersectionsDifferent = !compareObjects(
+        response?.intersections,
+        intersections
+      );
+
+      const shouldUpdateIntersections =
+        !!response?.intersections && isIntersectionsDifferent;
+
+      const isCooworkerWiresDifferent = !compareObjects(
+        response?.cooworkerWires,
+        wireRef.current?.cooworkerWires
+      );
+
+      const shouldUpdateCooworkerWires =
+        !!response?.cooworkerWires?.length && isCooworkerWiresDifferent;
+
+      if (!currentUserDidTheLastChange) {
+        if (!!response?.circuit?.length) {
+          lastEdited.current = response.editedBy;
+          setCircuit(response.circuit);
+        }
+
+        if (shouldUpdateWires) {
+          lastEdited.current = response.editedBy;
+          wireRef.current?.setWires(response.wires);
+        }
+
+        if (shouldUpdateCooworkerWires) {
+          lastEdited.current = response.editedBy;
+          wireRef.current?.setCooworkerWires(response.cooworkerWires);
+        }
+
+        if (shouldUpdateIntersections) {
+          lastEdited.current = response.editedBy;
+          setIntersections(response.intersections);
+        }
+      }
+    });
+  }, []);
 
   const handleDragMove = useCallback(
     (e: KonvaEventObject<DragEvent>, component = {} as ComponentType) => {
@@ -663,10 +750,6 @@ export const Workspace = () => {
     return component;
   };
 
-  const compareObjects = (obj1: object, obj2: object) => {
-    return JSON.stringify(obj1) === JSON.stringify(obj2);
-  };
-
   const handleComponentClick = (component: ComponentType) => {
     console.log({ component });
 
@@ -716,7 +799,12 @@ export const Workspace = () => {
               onComponentDroped={handleDragRelease}
               onClickComponent={handleComponentClick}
             />
-            <Wires ref={wireRef} />
+            <Wires
+              ref={wireRef}
+              userId={userId}
+              lastEdited={lastEdited}
+              simulation={state.simulation}
+            />
             {intersections.map(({ x, y }, i) => (
               <Circle
                 key={i}
