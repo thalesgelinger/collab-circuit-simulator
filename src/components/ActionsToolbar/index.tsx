@@ -56,13 +56,13 @@ export const ActionsToolbar = ({
   return (
     <section className={styles.container}>
       <Icon
-        name="play"
+        name={action === "simulate" ? "pause" : "play"}
         size={ICON_DEFAULT_SIZE}
         color={"#black"}
         onClick={async () => {
-          setAction("simulate");
-          onActionChange("simulate");
-          dispatch(addCircuit(circuit));
+          setAction(action === "simulate" ? "simulatestop" : "simulate");
+          onActionChange(action === "simulate" ? "simulatestop" : "simulate");
+          action === "simulate" && dispatch(addCircuit(circuit));
         }}
       />
       <Icon
@@ -85,7 +85,15 @@ export const ActionsToolbar = ({
           borderRadius: ICON_DEFAULT_SIZE / 4,
         }}
       />
-      <Icon name="share" size={ICON_DEFAULT_SIZE} color={"#black"} />
+      <Icon
+        name="share"
+        size={ICON_DEFAULT_SIZE}
+        color={"#black"}
+        onClick={async () => {
+          await navigator.clipboard.writeText(window.location.href);
+          alert("Circuit link copied to clipboard");
+        }}
+      />
       <Icon
         name="rotate"
         size={ICON_DEFAULT_SIZE}

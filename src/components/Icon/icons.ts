@@ -7,6 +7,7 @@ import print from "../../assets/icons/print.svg";
 import share from "../../assets/icons/share.svg";
 import trash from "../../assets/icons/trash.svg";
 import rotate from "../../assets/icons/rotate.svg";
+import pause from "../../assets/icons/pause.svg";
 
 export const icons = {
   close,
@@ -18,4 +19,5 @@ export const icons = {
   share,
   trash,
   rotate,
+  pause,
 };

@@ -84,7 +84,7 @@ export const Workspace = () => {
 
   const [isSimulationRunning, setIsSimulationRunning] = useState({
     isRunning: false,
-    userId: 0,
+    userId: "",
   });
 
   const toolbarRef = useRef();
@@ -102,6 +102,15 @@ export const Workspace = () => {
   const lastEdited = useRef(userId);
 
   const db = getDatabase(app);
+
+  useEffect(() => {
+    console.log({ nodes });
+    (async () => {
+      if (nodes > 1) {
+        await set(ref(db, `circuits/${id}/nodes`), nodes);
+      }
+    })();
+  }, [nodes]);
 
   useEffect(() => {
     if (!userId) {
@@ -138,16 +147,13 @@ export const Workspace = () => {
 
     const snapshot = await get(userCircuitsRef);
 
-    console.log({ snapshot: snapshot.val(), circuitCover });
-
-    if (!!snapshot.val()) {
+    if (!snapshot.val()) {
       return await Promise.resolve();
     }
 
     const snapshotCopy = [...(snapshot?.val() ?? [])];
     const indexCurrentCircuit = snapshotCopy.findIndex((el) => el.id === id);
     if (!!circuitCover && indexCurrentCircuit >= 0) {
-      console.log({ userId, snapshotCopy });
       snapshotCopy[indexCurrentCircuit] = {
         ...snapshotCopy[indexCurrentCircuit],
         img: circuitCover,
@@ -191,8 +197,12 @@ export const Workspace = () => {
       if (action === "simulate") {
         const { simulation, ...rest } = state.simulation;
         await set(ref(db, `circuits/${id}/isRunningSimulation`), true);
-        await set(ref(db, `circuits/${id}/editedBy`), lastEdited.current);
-        lastEdited.current = userId;
+        await set(ref(db, `circuits/${id}/editedBy`), userId);
+      }
+
+      if (action === "simulatestop") {
+        await set(ref(db, `circuits/${id}/isRunningSimulation`), false);
+        await set(ref(db, `circuits/${id}/editedBy`), userId);
       }
 
       if (action === "print") {
@@ -236,9 +246,13 @@ export const Workspace = () => {
       const shouldUpdateCooworkerWires =
         !!response?.cooworkerWires?.length && isCooworkerWiresDifferent;
 
+      if (response?.nodes > nodes) {
+        setNodes(response?.nodes);
+      }
+
       setIsSimulationRunning({
         isRunning: !!response?.isRunningSimulation,
-        userId: response?.editedBy ?? 0,
+        userId: response?.editedBy ?? "",
       });
 
       if (!currentUserDidTheLastChange) {
