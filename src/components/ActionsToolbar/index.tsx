@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { ComponentType } from "../../@types";
 import { Simulation } from "../../models/Simulation";
 import { ActionTypes, addCircuit } from "../../services/redux/simulationSlice";
@@ -25,6 +26,8 @@ export const ActionsToolbar = ({
 
   const dispatch = useDispatch();
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
@@ -43,7 +46,7 @@ export const ActionsToolbar = ({
     onActionChange(updatedAction);
 
     setTimeout(() => {
-      if (actionType === "print") {
+      if (["print", "goback"].includes(actionType)) {
         setAction("");
         onActionChange("");
       }
@@ -109,7 +112,12 @@ export const ActionsToolbar = ({
         size={ICON_DEFAULT_SIZE}
         color={"#black"}
       />
-      <Icon name="close" size={ICON_DEFAULT_SIZE} color={"#black"} />
+      <Icon
+        name="close"
+        size={ICON_DEFAULT_SIZE}
+        color={"#black"}
+        onClick={handleActionsChange("goback")}
+      />
     </section>
   );
 };

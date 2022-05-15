@@ -34,7 +34,8 @@ export interface CooworkerWire {
 }
 
 interface WiresProps {
-  userId: number;
+  userId: string;
+  circuitId: string;
   simulation: SimulationState;
   lastEdited: any;
 }
@@ -51,7 +52,7 @@ interface WiresHandle {
 }
 
 export const Wires = forwardRef<WiresHandle, WiresProps>(
-  ({ lastEdited, userId, simulation: simulationState }, wireRef) => {
+  ({ lastEdited, userId, simulation: simulationState, circuitId }, wireRef) => {
     const [wire, setWire] = useState<Wire>({} as Wire);
     const [wires, setWires] = useState<number[][]>([]);
 
@@ -86,7 +87,7 @@ export const Wires = forwardRef<WiresHandle, WiresProps>(
       dispatch(updateWires(wires));
       if (!!simulationState) {
         const { simulation, ...rest } = simulationState;
-        set(ref(db, "circuits"), {
+        set(ref(db, `circuits/${circuitId}`), {
           ...rest,
           wires,
           editedBy: lastEdited.current,
@@ -120,7 +121,7 @@ export const Wires = forwardRef<WiresHandle, WiresProps>(
       dispatch(updateCooworkerWires(cooworkerWires));
       if (!!simulationState) {
         const { simulation, ...rest } = simulationState;
-        set(ref(db, "circuits"), {
+        set(ref(db, `circuits/${circuitId}`), {
           ...rest,
           cooworkerWires,
           editedBy: lastEdited.current,

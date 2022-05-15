@@ -1,12 +1,13 @@
 import { useEffect, useReducer, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   getAuth,
   signInWithEmailAndPassword,
   FacebookAuthProvider,
   GoogleAuthProvider,
   signInWithPopup,
+  User,
 } from "firebase/auth";
 import { Button, Input } from "../../components";
 import { app } from "../../services/firebase";
@@ -30,20 +31,32 @@ export const Login = () => {
   );
   const [error, setError] = useState(false);
   const auth = getAuth(app);
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isLogged } = useSelector((state: RootState) => state.user);
+
+  const location = useLocation();
+
+  const dispatch = useDispatch();
+
+  const [user, setUser] = useState<User>({} as User);
 
   useEffect(() => {
-    if (isLogged) {
-      navigate("/dashboard");
+    console.log({ location });
+    if (!!user?.uid) {
+      console.log(location?.state?.from?.pathname);
+      if (!!location?.state?.from?.pathname) {
+        console.log("VAI VOLTAR");
+        navigate(location?.state?.from?.pathname);
+      } else {
+        console.log("VAI PRO DASH");
+        navigate("/dashboard");
+      }
     }
-  }, [isLogged]);
+  }, [user]);
 
   const actionEmailAndPassword = async () => {
     try {
       const response = await signInWithEmailAndPassword(auth, email, password);
-      dispatch(changeUser(response));
+      dispatch(changeUser(response.user));
       setError(false);
     } catch (error) {
       setError(true);
@@ -54,7 +67,8 @@ export const Login = () => {
     try {
       const provider = new FacebookAuthProvider();
       const response = await signInWithPopup(auth, provider);
-      dispatch(changeUser(response));
+      dispatch(changeUser(response.user));
+      setUser(response.user);
       setError(false);
     } catch (error) {
       setError(true);
@@ -65,9 +79,11 @@ export const Login = () => {
     try {
       const provider = new GoogleAuthProvider();
       const response = await signInWithPopup(auth, provider);
-      dispatch(changeUser(response));
+      dispatch(changeUser(response.user));
+      setUser(response.user);
       setError(false);
     } catch (error) {
+      console.log(error);
       setError(true);
     }
   };

@@ -20,20 +20,29 @@ import { Circuit } from "./Circuit";
 import { Oscilloscope } from "./Oscilloscope";
 import { useAuth } from "../../hooks/useAuth";
 import { app } from "../../services/firebase";
-import { getDatabase, onValue, ref, set } from "firebase/database";
+import { getDatabase, onValue, ref, set, on, get } from "firebase/database";
 import { ComponentsKeys, Position } from "../../@types/ComponentType";
 import { Tools } from "./Tools";
 import { Toolbar } from "./Toolbar";
-import { Provider, useDispatch, useSelector } from "react-redux";
-import { RootState, store } from "../../services/redux/store";
 import {
-  ActionTypes,
+  Provider,
+  ReactReduxContext,
+  useDispatch,
+  useSelector,
+} from "react-redux";
+import { RootState } from "../../services/redux/store";
+import {
   SimulationState,
   updateCircuit,
   updateIntersection,
 } from "../../services/redux/simulationSlice";
-import { Html } from "react-konva-utils";
 import { ProviderReturn } from "./ProviderReturn";
+import {
+  Navigate,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 
 type WiresHandle = ElementRef<typeof Wires>;
 
@@ -42,7 +51,7 @@ type ActionsType = {
 };
 
 interface SnapshotType extends SimulationState {
-  editedBy: number;
+  editedBy: string;
   isRunningSimulation: boolean;
 }
 
@@ -51,6 +60,8 @@ export const compareObjects = (obj1: object, obj2: object) => {
 };
 
 export const Workspace = () => {
+  const { id } = useParams();
+
   const [circuit, setCircuit] = useState<ComponentType[]>([]);
   const [state, setState] = useState<RootState>({} as RootState);
 
@@ -69,6 +80,8 @@ export const Workspace = () => {
 
   const [intersections, setIntersections] = useState<Position[]>([]);
 
+  const [circuitCover, setCircuitCover] = useState(null);
+
   const [isSimulationRunning, setIsSimulationRunning] = useState({
     isRunning: false,
     userId: 0,
@@ -76,13 +89,57 @@ export const Workspace = () => {
 
   const toolbarRef = useRef();
 
-  // const { user } = useAuth();
+  const stageRef = useRef<ElementRef<typeof Stage>>(null);
 
-  const userId = useMemo(() => Math.random(), []);
+  const {
+    user: { uid: userId },
+  } = useAuth();
+
+  const location = useLocation();
+
+  const navigate = useNavigate();
 
   const lastEdited = useRef(userId);
 
   const db = getDatabase(app);
+
+  useEffect(() => {
+    if (!userId) {
+      navigate("/login", { state: { from: location } });
+    }
+    return () => {
+      if (!!userId) {
+        resetUsersCircuits();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (action === "goback") {
+      resetUsersCircuits().then(() => {
+        navigate("/dashboard");
+      });
+    }
+  }, [circuitCover]);
+
+  const resetUsersCircuits = async () => {
+    const userCircuitsRef = ref(db, `users/${userId}`);
+
+    const snapshot = await get(userCircuitsRef);
+
+    console.log({ snapshot: snapshot.val(), circuitCover });
+
+    const snapshotCopy = [...snapshot.val()];
+    const indexCurrentCircuit = snapshotCopy.findIndex((el) => el.id === id);
+    snapshotCopy[indexCurrentCircuit] = {
+      ...snapshotCopy[indexCurrentCircuit],
+      img: circuitCover,
+    };
+
+    console.log({ userId, snapshotCopy });
+
+    await set(userCircuitsRef, snapshotCopy);
+  };
 
   useEffect(() => {
     dispatch(updateCircuit(circuit));
@@ -90,7 +147,7 @@ export const Workspace = () => {
       const { simulation, ...rest } = state.simulation;
 
       if (!compareObjects(rest.circuit, circuit)) {
-        set(ref(db, "circuits"), {
+        set(ref(db, `circuits/${id}`), {
           ...rest,
           circuit,
           editedBy: lastEdited.current,
@@ -106,7 +163,7 @@ export const Workspace = () => {
       const { simulation, ...rest } = state.simulation;
 
       if (!compareObjects(rest.intersections, intersections)) {
-        set(ref(db, "circuits"), {
+        set(ref(db, `circuits/${id}`), {
           ...rest,
           intersections,
           editedBy: lastEdited.current,
@@ -119,7 +176,7 @@ export const Workspace = () => {
   useEffect(() => {
     if (action === "simulate") {
       const { simulation, ...rest } = state.simulation;
-      set(ref(db, "circuits"), {
+      set(ref(db, `circuits/${id}`), {
         ...rest,
         editedBy: lastEdited.current,
         isRunningSimulation: true,
@@ -132,11 +189,16 @@ export const Workspace = () => {
       window.print();
       toolbarRef.current.show();
     }
+
+    if (action === "goback") {
+      const img = stageRef.current?.toDataURL();
+      setCircuitCover(img);
+    }
   }, [action]);
 
   useEffect(() => {
-    const circuits = ref(db, "circuits");
-    onValue(circuits, (snapshot) => {
+    const circuits = ref(db, `circuits/${id}`);
+    const subscribe = onValue(circuits, (snapshot) => {
       const response = snapshot.val() as SnapshotType;
       const currentUserDidTheLastChange = response?.editedBy === userId;
 
@@ -189,6 +251,10 @@ export const Workspace = () => {
         }
       }
     });
+    return () => {
+      set(ref(db, `circuits/${id}/editedBy`), "");
+      subscribe();
+    };
   }, []);
 
   const handleDragMove = useCallback(
@@ -835,55 +901,61 @@ export const Workspace = () => {
         </span>
       )}
       <ActionsToolbar circuit={circuit} onActionChange={setAction} />
-      <Stage
-        width={window.innerWidth}
-        height={window.innerHeight}
-        onClick={handleStageClick}
-        onMouseMove={handleStageMouseMove}
-      >
-        <Provider store={store}>
-          <Layer>
-            <ProviderReturn returnState={setState} />
-          </Layer>
-          <Layer>
-            <Grid blockSnapSize={blockSnapSize} />
-          </Layer>
-          <Layer>
-            <Circuit
-              components={circuit}
-              onCircuitUpdate={setCircuit}
-              onComponentMoving={handleDragMove}
-              onComponentDroped={handleDragRelease}
-              onClickComponent={handleComponentClick}
-            />
-            <Wires
-              ref={wireRef}
-              userId={userId}
-              lastEdited={lastEdited}
-              simulation={state.simulation}
-            />
-            {intersections.map(({ x, y }, i) => (
-              <Circle
-                key={i}
-                radius={5}
-                fill="black"
-                stroke="black"
-                strokeWidth={0}
-                x={x}
-                y={y}
-              />
-            ))}
-          </Layer>
+      <ReactReduxContext.Consumer>
+        {({ store }) => (
+          <Stage
+            width={window.innerWidth}
+            height={window.innerHeight}
+            onClick={handleStageClick}
+            onMouseMove={handleStageMouseMove}
+            ref={stageRef}
+          >
+            <Provider store={store}>
+              <Layer>
+                <ProviderReturn returnState={setState} />
+              </Layer>
+              <Layer>
+                <Grid blockSnapSize={blockSnapSize} />
+              </Layer>
+              <Layer>
+                <Circuit
+                  components={circuit}
+                  onCircuitUpdate={setCircuit}
+                  onComponentMoving={handleDragMove}
+                  onComponentDroped={handleDragRelease}
+                  onClickComponent={handleComponentClick}
+                />
+                <Wires
+                  ref={wireRef}
+                  circuitId={id}
+                  userId={userId}
+                  lastEdited={lastEdited}
+                  simulation={state.simulation}
+                />
+                {intersections.map(({ x, y }, i) => (
+                  <Circle
+                    key={i}
+                    radius={5}
+                    fill="black"
+                    stroke="black"
+                    strokeWidth={0}
+                    x={x}
+                    y={y}
+                  />
+                ))}
+              </Layer>
 
-          <Toolbar
-            ref={toolbarRef}
-            onComponentDragStart={handleDragStart}
-            onComponentDragMove={handleDragMove}
-            onComponentDragEnd={handleDragRelease}
-            showTools={showTools}
-          />
-        </Provider>
-      </Stage>
+              <Toolbar
+                ref={toolbarRef}
+                onComponentDragStart={handleDragStart}
+                onComponentDragMove={handleDragMove}
+                onComponentDragEnd={handleDragRelease}
+                showTools={showTools}
+              />
+            </Provider>
+          </Stage>
+        )}
+      </ReactReduxContext.Consumer>
 
       {/* {!!state?.simulation?.simulation && (
         <Oscilloscope simulation={state!.simulation.simulation} />

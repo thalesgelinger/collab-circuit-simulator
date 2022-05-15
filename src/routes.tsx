@@ -4,9 +4,9 @@ import { Dashboard, Login, Workspace } from "./pages";
 export const Router = () => {
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/workspace" element={<Workspace />} />
+      <Route path="/workspace/:id" element={<Workspace />} />
     </Routes>
   );
 };

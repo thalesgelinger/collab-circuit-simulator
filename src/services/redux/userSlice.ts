@@ -8,13 +8,16 @@ export const userSlice = createSlice({
     isLogged: false,
   },
   reducers: {
-    changeUser(state, { payload }) {
-      state.isLogged = true;
-      state.user = payload.user;
+    changeUser(state, { payload: user }) {
+      console.log({ user });
+      state.user = user;
+      if (!!user) {
+        sessionStorage.setItem("user", JSON.stringify(user));
+      }
     },
     logout(state) {
-      state.isLogged = false;
       state.user = {} as any;
+      sessionStorage.setItem("user", JSON.stringify({}));
     },
   },
 });
