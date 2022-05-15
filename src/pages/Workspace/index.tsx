@@ -43,6 +43,7 @@ type ActionsType = {
 
 interface SnapshotType extends SimulationState {
   editedBy: number;
+  isRunningSimulation: boolean;
 }
 
 export const compareObjects = (obj1: object, obj2: object) => {
@@ -68,6 +69,11 @@ export const Workspace = () => {
 
   const [intersections, setIntersections] = useState<Position[]>([]);
 
+  const [isSimulationRunning, setIsSimulationRunning] = useState({
+    isRunning: false,
+    userId: 0,
+  });
+
   // const { user } = useAuth();
 
   const userId = useMemo(() => Math.random(), []);
@@ -77,13 +83,11 @@ export const Workspace = () => {
   const db = getDatabase(app);
 
   useEffect(() => {
-    console.log({ circuit });
     dispatch(updateCircuit(circuit));
     if (!!state.simulation) {
       const { simulation, ...rest } = state.simulation;
 
       if (!compareObjects(rest.circuit, circuit)) {
-        console.log("SAO DIFERENTES");
         set(ref(db, "circuits"), {
           ...rest,
           circuit,
@@ -109,6 +113,18 @@ export const Workspace = () => {
       }
     }
   }, [intersections]);
+
+  useEffect(() => {
+    if (action === "simulate") {
+      const { simulation, ...rest } = state.simulation;
+      set(ref(db, "circuits"), {
+        ...rest,
+        editedBy: lastEdited.current,
+        isRunningSimulation: true,
+      });
+      lastEdited.current = userId;
+    }
+  }, [action]);
 
   useEffect(() => {
     const circuits = ref(db, "circuits");
@@ -137,6 +153,11 @@ export const Workspace = () => {
 
       const shouldUpdateCooworkerWires =
         !!response?.cooworkerWires?.length && isCooworkerWiresDifferent;
+
+      setIsSimulationRunning({
+        isRunning: !!response?.isRunningSimulation,
+        userId: response?.editedBy ?? 0,
+      });
 
       if (!currentUserDidTheLastChange) {
         if (!!response?.circuit?.length) {
@@ -775,6 +796,36 @@ export const Workspace = () => {
 
   return (
     <div className={styles.container}>
+      {isSimulationRunning.isRunning && (
+        <span
+          style={{
+            width: `100%`,
+            position: "absolute",
+            display: "flex",
+            justifyContent: "center",
+            backgroundColor: "red",
+            zIndex: 1000,
+            color: "white",
+          }}
+        >
+          {isSimulationRunning.userId} is running the simulation
+        </span>
+      )}
+      {isSimulationRunning.isRunning && isSimulationRunning.userId === userId && (
+        <span
+          style={{
+            width: `100%`,
+            position: "absolute",
+            display: "flex",
+            justifyContent: "center",
+            backgroundColor: "green",
+            zIndex: 1000,
+            color: "white",
+          }}
+        >
+          You start the simulation
+        </span>
+      )}
       <ActionsToolbar circuit={circuit} onActionChange={setAction} />
       <Stage
         width={window.innerWidth}

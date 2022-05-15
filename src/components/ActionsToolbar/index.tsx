@@ -50,6 +50,8 @@ export const ActionsToolbar = ({
         size={ICON_DEFAULT_SIZE}
         color={"#black"}
         onClick={async () => {
+          setAction("simulate");
+          onActionChange("simulate");
           dispatch(addCircuit(circuit));
         }}
       />
