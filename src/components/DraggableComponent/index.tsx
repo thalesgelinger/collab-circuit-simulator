@@ -185,7 +185,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
         <>
           <Text
             ref={textRef}
-            text={component?.name}
+            text={componentData?.name}
             x={x}
             y={y - 21}
             fontSize={14}
@@ -194,7 +194,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
           {componentData?.value && (
             <Text
               ref={textRef}
-              text={component?.value}
+              text={componentData?.value}
               x={x}
               y={y - 7}
               fontSize={14}

@@ -83,6 +83,7 @@ export const Workspace = () => {
       const { simulation, ...rest } = state.simulation;
 
       if (!compareObjects(rest.circuit, circuit)) {
+        console.log("SAO DIFERENTES");
         set(ref(db, "circuits"), {
           ...rest,
           circuit,
@@ -791,10 +792,7 @@ export const Workspace = () => {
           <Layer>
             <Circuit
               components={circuit}
-              onCircuitUpdate={(ckt) => {
-                console.log("UPDATE CIRCUIT:", ckt);
-                setCircuit(ckt);
-              }}
+              onCircuitUpdate={setCircuit}
               onComponentMoving={handleDragMove}
               onComponentDroped={handleDragRelease}
               onClickComponent={handleComponentClick}
