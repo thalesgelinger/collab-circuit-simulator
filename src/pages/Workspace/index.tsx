@@ -115,11 +115,22 @@ export const Workspace = () => {
   }, []);
 
   useEffect(() => {
-    if (action === "goback") {
-      resetUsersCircuits().then(() => {
+    (async () => {
+      if (action === "goback") {
+        const cooworkerWiresRef = ref(db, `circuits/${id}/cooworkerWires`);
+        const cooworkerWiresResponse = await get(cooworkerWiresRef);
+
+        const cooworkerWires = [...(cooworkerWiresResponse?.val() ?? [])];
+
+        const cooworkerWiresFiltered = cooworkerWires.filter(
+          (wire) => wire.id !== userId
+        );
+
+        await set(cooworkerWiresRef, cooworkerWiresFiltered);
+        await resetUsersCircuits();
         navigate("/dashboard");
-      });
-    }
+      }
+    })();
   }, [circuitCover]);
 
   const resetUsersCircuits = async () => {
@@ -129,71 +140,69 @@ export const Workspace = () => {
 
     console.log({ snapshot: snapshot.val(), circuitCover });
 
-    const snapshotCopy = [...snapshot.val()];
+    const snapshotCopy = [...(snapshot?.val() ?? [])];
     const indexCurrentCircuit = snapshotCopy.findIndex((el) => el.id === id);
-    snapshotCopy[indexCurrentCircuit] = {
-      ...snapshotCopy[indexCurrentCircuit],
-      img: circuitCover,
-    };
-
+    if (!!circuitCover) {
+      snapshotCopy[indexCurrentCircuit] = {
+        ...snapshotCopy[indexCurrentCircuit],
+        img: circuitCover,
+      };
+    }
     console.log({ userId, snapshotCopy });
 
     await set(userCircuitsRef, snapshotCopy);
   };
 
   useEffect(() => {
-    dispatch(updateCircuit(circuit));
-    if (!!state.simulation) {
-      const { simulation, ...rest } = state.simulation;
+    (async () => {
+      dispatch(updateCircuit(circuit));
+      if (!!state.simulation) {
+        const { simulation, ...rest } = state.simulation;
 
-      if (!compareObjects(rest.circuit, circuit)) {
-        set(ref(db, `circuits/${id}`), {
-          ...rest,
-          circuit,
-          editedBy: lastEdited.current,
-        });
-        lastEdited.current = userId;
+        if (!compareObjects(rest.circuit, circuit)) {
+          await set(ref(db, `circuits/${id}/circuit`), circuit);
+          await set(ref(db, `circuits/${id}/editedBy`), lastEdited.current);
+          lastEdited.current = userId;
+        }
       }
-    }
+    })();
   }, [circuit]);
 
   useEffect(() => {
-    dispatch(updateIntersection(intersections));
-    if (!!state.simulation) {
-      const { simulation, ...rest } = state.simulation;
+    (async () => {
+      dispatch(updateIntersection(intersections));
+      if (!!state.simulation) {
+        const { simulation, ...rest } = state.simulation;
 
-      if (!compareObjects(rest.intersections, intersections)) {
-        set(ref(db, `circuits/${id}`), {
-          ...rest,
-          intersections,
-          editedBy: lastEdited.current,
-        });
-        lastEdited.current = userId;
+        if (!compareObjects(rest.intersections, intersections)) {
+          await set(ref(db, `circuits/${id}/intersections`), intersections);
+          await set(ref(db, `circuits/${id}/editedBy`), lastEdited.current);
+          lastEdited.current = userId;
+        }
       }
-    }
+    })();
   }, [intersections]);
 
   useEffect(() => {
-    if (action === "simulate") {
-      const { simulation, ...rest } = state.simulation;
-      set(ref(db, `circuits/${id}`), {
-        ...rest,
-        editedBy: lastEdited.current,
-        isRunningSimulation: true,
-      });
-      lastEdited.current = userId;
-    }
+    (async () => {
+      if (action === "simulate") {
+        const { simulation, ...rest } = state.simulation;
+        await set(ref(db, `circuits/${id}/isRunningSimulation`), true);
+        await set(ref(db, `circuits/${id}/editedBy`), lastEdited.current);
+        lastEdited.current = userId;
+      }
 
-    if (action === "print") {
-      toolbarRef.current.hide();
-      window.print();
-      toolbarRef.current.show();
-    }
+      if (action === "print") {
+        toolbarRef.current.hide();
+        window.print();
+        toolbarRef.current.show();
+      }
 
-    if (action === "goback") {
-      const img = stageRef.current?.toDataURL();
-      setCircuitCover(img);
-    }
+      if (action === "goback") {
+        const img = stageRef.current?.toDataURL();
+        setCircuitCover(img);
+      }
+    })();
   }, [action]);
 
   useEffect(() => {
@@ -389,8 +398,9 @@ export const Workspace = () => {
     if (wireHasConnectedToComponent(wire)) {
       console.log("DONE");
       setWireNodeToEndComponent(wire);
-      setWire({} as Wire);
+      console.log("SETRTING WIRE AFTER NODE CONNECTED");
       setWires([...wires, points]);
+      setWire({} as Wire);
       return;
     }
 
@@ -398,8 +408,8 @@ export const Workspace = () => {
       console.log("É UMA JUNÇÃO");
       connectNodeToComponent(wire);
       setIntersections([...intersections, wire.to]);
-      setWire({} as Wire);
       setWires([...wires, points]);
+      setWire({} as Wire);
       return;
     }
 

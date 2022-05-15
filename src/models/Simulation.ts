@@ -34,63 +34,7 @@ export class Simulation {
   }
 
   async #run(netlist: string) {
-    localStorage.setItem("netlist", netlist);
-    window.netlistGlobal = netlist;
-
-    window.runSpice();
-
-    const getData = async (): Promise<string[]> => {
-      const resultString = localStorage.getItem("spice");
-      console.log("BATATA");
-      const results = !!resultString ? JSON.parse(resultString) : [];
-
-      if (results[results.length - 1] === "DONE") {
-        const script = document.querySelector("#spice");
-        document.body.removeChild(script);
-
-        return Promise.resolve(results);
-      }
-      await delay(200);
-      return await getData();
-    };
-
-    const response = await getData();
-    localStorage.setItem("spice", JSON.stringify([]));
-    return response;
-
-    // let results: string[] = [];
-
-    // window.observe = (value: string) => {
-    //   console.log({ value });
-    //   results.push(value);
-    //   if (value === "DONE") {
-    //     console.log("DEU");
-    //     localStorage.setItem("done", JSON.stringify(true));
-    //   }
-    // };
-
-    // const response = await new Promise((res) => {
-    //   const interval = setInterval(() => {
-    //     console.log("BATATA");
-    //     if (JSON.parse(localStorage.getItem("done"))) {
-    //       console.log("Vai limpar");
-    //       clearInterval(interval);
-    //       res(results);
-    //     }
-    //   }, 500);
-    // });
-
-    // if (JSON.parse(localStorage.getItem("done"))) {
-    //   console.log("FOI ess naba?");
-    //   window.observe = null;
-    //   window.netlistGlobal = "";
-    //   const script = document.querySelector("#spice");
-    //   document.body.removeChild(script);
-    // }
-
-    // console.log("ACABOU:", { response, done: this.#isRunningSimulation });
-
-    // results = [];
+    const response = await window.runSpice(netlist);
     return response;
   }
 
@@ -119,10 +63,10 @@ export class Simulation {
   async getVoltageNodes() {
     console.log("RODOU o getVoltageNodes:", this.#isRunning);
 
-    if (this.#isRunning) {
-      await delay(100);
-      return await this.getVoltageNodes();
-    }
+    // if (this.#isRunning) {
+    //   await delay(100);
+    //   return await this.getVoltageNodes();
+    // }
 
     this.#isRunning = true;
     const NODES_HEADER_SIZE = 3;

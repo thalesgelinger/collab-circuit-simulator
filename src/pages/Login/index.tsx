@@ -40,14 +40,10 @@ export const Login = () => {
   const [user, setUser] = useState<User>({} as User);
 
   useEffect(() => {
-    console.log({ location });
     if (!!user?.uid) {
-      console.log(location?.state?.from?.pathname);
       if (!!location?.state?.from?.pathname) {
-        console.log("VAI VOLTAR");
         navigate(location?.state?.from?.pathname);
       } else {
-        console.log("VAI PRO DASH");
         navigate("/dashboard");
       }
     }

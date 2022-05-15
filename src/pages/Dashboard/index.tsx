@@ -11,7 +11,7 @@ import styles from "./styles.module.scss";
 import { CircuitCardType } from "../../@types";
 import { logout } from "../../services/redux/userSlice";
 import { useAuth } from "../../hooks/useAuth";
-import { get, getDatabase, onValue, ref, set } from "firebase/database";
+import { get, getDatabase, onValue, ref, set, remove } from "firebase/database";
 import { app } from "../../services/firebase";
 
 export const Dashboard = () => {
@@ -29,7 +29,7 @@ export const Dashboard = () => {
         setMyCircuits(snapshot.val() ?? []);
       });
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     console.log({ myCircuits });
@@ -43,10 +43,10 @@ export const Dashboard = () => {
   const createNewCircuit = async () => {
     const hash = Math.random().toString(36).substring(7);
 
-    await set(ref(db, `users/${user.uid}`), [
-      ...myCircuits,
-      { id: hash, name: `Circuit ${myCircuits.length + 1}` },
-    ]);
+    await set(ref(db, `users/${user.uid}/${myCircuits.length}`), {
+      id: hash,
+      name: `Circuit ${myCircuits.length + 1}`,
+    });
 
     navigate(`/workspace/${hash}`);
   };

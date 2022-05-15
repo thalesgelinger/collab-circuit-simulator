@@ -1,4 +1,4 @@
-import { getDatabase, set, ref } from "firebase/database";
+import { getDatabase, set, ref, remove } from "firebase/database";
 import { Vector2d } from "konva/lib/types";
 import {
   Dispatch,
@@ -28,7 +28,7 @@ export interface Wire {
 }
 
 export interface CooworkerWire {
-  id: number;
+  id: string;
   from: Vector2d;
   to: Vector2d;
 }
@@ -84,23 +84,30 @@ export const Wires = forwardRef<WiresHandle, WiresProps>(
     const db = getDatabase(app);
 
     useEffect(() => {
-      dispatch(updateWires(wires));
-      if (!!simulationState) {
-        const { simulation, ...rest } = simulationState;
-        set(ref(db, `circuits/${circuitId}`), {
-          ...rest,
-          wires,
-          editedBy: lastEdited.current,
-        });
-        lastEdited.current = userId;
-      }
+      console.log("SETOU OS WIRES", wires);
+      (async () => {
+        dispatch(updateWires(wires));
+        if (!!simulationState) {
+          console.log("ENVIANDO NOVOS FIOS:", { wires });
+          await set(ref(db, `circuits/${circuitId}/wires`), wires);
+          await set(
+            ref(db, `circuits/${circuitId}/editedBy`),
+            lastEdited.current
+          );
+
+          lastEdited.current = userId;
+        }
+      })();
     }, [wires]);
 
     useEffect(() => {
+      console.log("ATENÇÃO AQUI: ", { wire });
+
       if (!!wire) {
         const indexWireInCooworker = simulationState?.cooworkerWires.findIndex(
           (wire) => wire.id === userId
         );
+
         if (indexWireInCooworker >= 0) {
           const cooworkerCopy = [...simulationState.cooworkerWires];
 
@@ -118,16 +125,23 @@ export const Wires = forwardRef<WiresHandle, WiresProps>(
     }, [wire]);
 
     useEffect(() => {
-      dispatch(updateCooworkerWires(cooworkerWires));
-      if (!!simulationState) {
-        const { simulation, ...rest } = simulationState;
-        set(ref(db, `circuits/${circuitId}`), {
-          ...rest,
-          cooworkerWires,
-          editedBy: lastEdited.current,
-        });
-        lastEdited.current = userId;
-      }
+      console.log("COOWORKER WIRES: ", { cooworkerWires, wire });
+      (async () => {
+        dispatch(updateCooworkerWires(cooworkerWires));
+        if (!!simulationState) {
+          console.log("VAI SETAR O COOWORKER");
+          await set(
+            ref(db, `circuits/${circuitId}/cooworkerWires`),
+            cooworkerWires
+          );
+          await set(
+            ref(db, `circuits/${circuitId}/editedBy`),
+            lastEdited.current
+          );
+
+          lastEdited.current = userId;
+        }
+      })();
     }, [cooworkerWires]);
 
     const getCurvePoint = (from: Vector2d, to: Vector2d) => {
