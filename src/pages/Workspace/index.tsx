@@ -74,6 +74,8 @@ export const Workspace = () => {
     userId: 0,
   });
 
+  const toolbarRef = useRef();
+
   // const { user } = useAuth();
 
   const userId = useMemo(() => Math.random(), []);
@@ -123,6 +125,12 @@ export const Workspace = () => {
         isRunningSimulation: true,
       });
       lastEdited.current = userId;
+    }
+
+    if (action === "print") {
+      toolbarRef.current.hide();
+      window.print();
+      toolbarRef.current.show();
     }
   }, [action]);
 
@@ -868,6 +876,7 @@ export const Workspace = () => {
           </Layer>
 
           <Toolbar
+            ref={toolbarRef}
             onComponentDragStart={handleDragStart}
             onComponentDragMove={handleDragMove}
             onComponentDragEnd={handleDragRelease}

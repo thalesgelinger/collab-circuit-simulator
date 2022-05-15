@@ -1,3 +1,4 @@
+import { forwardRef, useImperativeHandle, useState } from "react";
 import { Layer, Rect } from "react-konva";
 import { Html } from "react-konva-utils";
 import { ComponentType } from "../../../@types";
@@ -11,35 +12,50 @@ interface ToolbarProps {
   showTools: boolean;
 }
 
-const ITEM_SIZE = 20;
+interface ToolbarHandler {
+  hide: () => void;
+  show: () => void;
+}
 
-const TOOLBAR_DIMENSIONS = {
-  width: 4 * ITEM_SIZE,
-  height: window.innerHeight * 0.8,
-  marginTop: window.innerHeight * 0.1,
-};
+export const Toolbar = forwardRef<ToolbarHandler, ToolbarProps>(
+  (
+    {
+      onComponentDragEnd,
+      onComponentDragMove,
+      onComponentDragStart,
+      showTools,
+    },
+    ref
+  ) => {
+    const [show, setShow] = useState(true);
 
-export const Toolbar = ({
-  onComponentDragEnd,
-  onComponentDragMove,
-  onComponentDragStart,
-  showTools,
-}: ToolbarProps) => {
-  return (
-    <Layer>
-      {showTools ? (
-        <Tools
-          onComponentDragStart={onComponentDragStart}
-          onComponentDragMove={onComponentDragMove}
-          onComponentDragEnd={onComponentDragEnd}
-        />
-      ) : (
-        <ComponentsToolbar
-          onComponentDragStart={onComponentDragStart}
-          onComponentDragMove={onComponentDragMove}
-          onComponentDragEnd={onComponentDragEnd}
-        />
-      )}
-    </Layer>
-  );
-};
+    useImperativeHandle(ref, () => ({
+      hide: () => {
+        setShow(false);
+      },
+      show: () => {
+        setShow(true);
+      },
+    }));
+
+    return (
+      show && (
+        <Layer>
+          {showTools ? (
+            <Tools
+              onComponentDragStart={onComponentDragStart}
+              onComponentDragMove={onComponentDragMove}
+              onComponentDragEnd={onComponentDragEnd}
+            />
+          ) : (
+            <ComponentsToolbar
+              onComponentDragStart={onComponentDragStart}
+              onComponentDragMove={onComponentDragMove}
+              onComponentDragEnd={onComponentDragEnd}
+            />
+          )}
+        </Layer>
+      )
+    );
+  }
+);

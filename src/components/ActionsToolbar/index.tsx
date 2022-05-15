@@ -41,6 +41,13 @@ export const ActionsToolbar = ({
 
     setAction(updatedAction);
     onActionChange(updatedAction);
+
+    setTimeout(() => {
+      if (actionType === "print") {
+        setAction("");
+        onActionChange("");
+      }
+    }, 500);
   };
 
   return (
@@ -65,21 +72,36 @@ export const ActionsToolbar = ({
           borderRadius: ICON_DEFAULT_SIZE / 4,
         }}
       />
-      <Icon name="print" size={ICON_DEFAULT_SIZE} color={"#black"} />
+      <Icon
+        name="print"
+        size={ICON_DEFAULT_SIZE}
+        color={"#black"}
+        onClick={handleActionsChange("print")}
+        style={{
+          border: `1px solid ${action === "print" ? "black" : "transparent"}`,
+          borderRadius: ICON_DEFAULT_SIZE / 4,
+        }}
+      />
       <Icon name="share" size={ICON_DEFAULT_SIZE} color={"#black"} />
       <Icon
         name="rotate"
         size={ICON_DEFAULT_SIZE}
         color={"#black"}
         onClick={handleActionsChange("rotate")}
-        style={{ opacity: action === "rotate" ? 0.5 : 1 }}
+        style={{
+          border: `1px solid ${action === "rotate" ? "black" : "transparent"}`,
+          borderRadius: ICON_DEFAULT_SIZE / 4,
+        }}
       />
       <Icon
         name="trash"
         size={ICON_DEFAULT_SIZE}
         color={"#black"}
         onClick={handleActionsChange("remove")}
-        style={{ opacity: action === "remove" ? 0.5 : 1 }}
+        style={{
+          border: `1px solid ${action === "trash" ? "black" : "transparent"}`,
+          borderRadius: ICON_DEFAULT_SIZE / 4,
+        }}
       />
       <Icon name="left-curly-arrow" size={ICON_DEFAULT_SIZE} color={"#black"} />
       <Icon
