@@ -26,7 +26,10 @@ export const Dashboard = () => {
     console.log({ userId: user.uid });
     if (!!user?.uid) {
       get(ref(db, `users/${user.uid}`)).then((snapshot) => {
-        setMyCircuits(snapshot.val() ?? []);
+        console.log({ snaoshotNoDashBoard: snapshot.val() });
+        if (!!snapshot.val()) {
+          setMyCircuits(snapshot.val());
+        }
       });
     }
   }, [user]);
@@ -69,15 +72,16 @@ export const Dashboard = () => {
         </Button>
       </aside>
       <main>
-        {myCircuits.map(({ id, img, name }) => (
-          <CircuitCard
-            key={id}
-            id={id}
-            img={img}
-            name={name}
-            onClick={handleCardClick}
-          />
-        ))}
+        {!!myCircuits?.length &&
+          myCircuits.map(({ id, img, name }) => (
+            <CircuitCard
+              key={id}
+              id={id}
+              img={img}
+              name={name}
+              onClick={handleCardClick}
+            />
+          ))}
       </main>
     </div>
   );

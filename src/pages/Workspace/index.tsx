@@ -140,17 +140,20 @@ export const Workspace = () => {
 
     console.log({ snapshot: snapshot.val(), circuitCover });
 
+    if (!!snapshot.val()) {
+      return await Promise.resolve();
+    }
+
     const snapshotCopy = [...(snapshot?.val() ?? [])];
     const indexCurrentCircuit = snapshotCopy.findIndex((el) => el.id === id);
-    if (!!circuitCover) {
+    if (!!circuitCover && indexCurrentCircuit >= 0) {
+      console.log({ userId, snapshotCopy });
       snapshotCopy[indexCurrentCircuit] = {
         ...snapshotCopy[indexCurrentCircuit],
         img: circuitCover,
       };
+      await set(userCircuitsRef, snapshotCopy);
     }
-    console.log({ userId, snapshotCopy });
-
-    await set(userCircuitsRef, snapshotCopy);
   };
 
   useEffect(() => {

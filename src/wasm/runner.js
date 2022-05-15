@@ -6,7 +6,13 @@ Module = {
   preRun: [
     () => {
       console.log("from html");
+      // https://emscripten.org/docs/api_reference/Filesystem-API.html#filesystem-api
       FS.writeFile("/test.cir", netlistGlobal);
+      // FS.writeFile("/modelcard.nmos", strModelNmos);
+      // FS.writeFile("/modelcard.pmos", strModelPmos);
+
+      // FS.writeFile("/test_bsim.cir", strBsimComprt);
+      //console.log(FS.readFile("/test.cir", { encoding: "utf8" }));
     },
   ],
   postRun: [
@@ -26,10 +32,13 @@ Module = {
 const delay = (time) => new Promise((res) => setTimeout(res, time));
 
 var runSpice = async (netlist) => {
-  console.log({ netlist });
   netlistGlobal = netlist;
+
+  console.log({ netlist });
+
   const script = document.createElement("script");
-  script.src = "./src/wasm/ngspice.js";
+
+  script.src = "../src/wasm/ngspice.js";
   script.type = "text/javascript";
   document.body.appendChild(script);
 
