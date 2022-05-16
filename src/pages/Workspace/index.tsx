@@ -32,6 +32,7 @@ import {
 } from "react-redux";
 import { RootState } from "../../services/redux/store";
 import {
+  addCircuit,
   SimulationState,
   updateCircuit,
   updateIntersection,
@@ -195,7 +196,7 @@ export const Workspace = () => {
   useEffect(() => {
     (async () => {
       if (action === "simulate") {
-        const { simulation, ...rest } = state.simulation;
+        dispatch(addCircuit(circuit));
         await set(ref(db, `circuits/${id}/isRunningSimulation`), true);
         await set(ref(db, `circuits/${id}/editedBy`), userId);
       }

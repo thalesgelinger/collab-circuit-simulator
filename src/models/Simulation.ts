@@ -3,6 +3,7 @@ import { ComponentType } from "../@types";
 
 export type CircuitType = ComponentType[];
 
+const delay = (time) => new Promise((res) => setTimeout(res, time));
 export class Simulation {
   #resultData: string[] = [];
   #netlist = "";
@@ -22,7 +23,21 @@ export class Simulation {
   }
 
   async #run(netlist: string) {
-    const netlistResult = await window.runSpice(netlist);
+    const netlistResult = await window.runSpice(
+      netlist,
+      "/src/models/wasm/ngspice.js"
+    );
+    const oldRunner = document.getElementById("runner");
+    oldRunner?.remove();
+
+    const newRunner = document.createElement("script");
+
+    newRunner.id = "runner";
+    newRunner.src = "/src/models/wasm/runner.js";
+    newRunner.type = "text/javascript";
+
+    document.body.appendChild(newRunner);
+
     return netlistResult;
   }
 

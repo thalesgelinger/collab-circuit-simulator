@@ -70,7 +70,6 @@ export const ActionsToolbar = ({
         onClick={async () => {
           setAction(action === "simulate" ? "simulatestop" : "simulate");
           onActionChange(action === "simulate" ? "simulatestop" : "simulate");
-          action === "simulate" && dispatch(addCircuit(circuit));
         }}
       />
       <Icon
