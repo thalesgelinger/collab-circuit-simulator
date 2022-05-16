@@ -2,7 +2,6 @@ var netlistGlobal;
 var output = () => {};
 
 function setValue(v) {
-  console.log({ v });
   const results = getValue();
   localStorage.setItem("simulation", JSON.stringify([...results, v]));
 }
@@ -26,14 +25,6 @@ Module = {
   ],
   postRun: [
     () => {
-      // const value = new CustomEvent("spice", {
-      //   detail: {
-      //     value: "DONE",
-      //   },
-      // });
-
-      // window.dispatchEvent(value);
-      // output("DONE");
       setValue("DONE");
     },
   ],
@@ -51,16 +42,6 @@ var runSpice = async (netlist, scriptPath) => {
 
   netlistGlobal = netlist;
   let results = getValue();
-  console.log("VAI ENTRAR NO LOOP", { results, netlistGlobal });
-
-  console.log("RODANDO A SIMULAÇÃO");
-
-  output = (v) => {
-    console.log({ v });
-    results.push(v);
-  };
-
-  // window.addEventListener("spice", handler);
 
   const script = document.createElement("script");
 
@@ -72,15 +53,12 @@ var runSpice = async (netlist, scriptPath) => {
 
   const MAX_CALLS = 20;
   let maxCalls = 0;
-  console.log("VAI ENTRAR NO LOOP", { results, netlistGlobal });
   while (results[results.length - 1] !== "DONE" && maxCalls < MAX_CALLS) {
-    console.log("LOOPPPP", { maxCalls, results });
     results = getValue();
     await delay(200);
     maxCalls++;
   }
 
-  console.log("VAI REMOVER O SCRIPT");
   const spice = document.getElementById("spice");
   spice?.remove();
 

@@ -31,6 +31,7 @@ const ToolsShape = () => {
       height={TOOLBAR_DIMENSIONS.height}
       fill="rgba(116, 116, 116, 0.1647)"
       cornerRadius={16}
+      draggable={false}
     />
   );
 };

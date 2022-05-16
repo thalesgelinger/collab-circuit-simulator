@@ -38,6 +38,7 @@ interface WiresProps {
   circuitId: string;
   simulation: SimulationState;
   lastEdited: any;
+  onClickWire(index: number): void;
 }
 
 interface WiresHandle {
@@ -52,7 +53,10 @@ interface WiresHandle {
 }
 
 export const Wires = forwardRef<WiresHandle, WiresProps>(
-  ({ lastEdited, userId, simulation: simulationState, circuitId }, wireRef) => {
+  (
+    { lastEdited, userId, simulation: simulationState, circuitId, onClickWire },
+    wireRef
+  ) => {
     const [wire, setWire] = useState<Wire>({} as Wire);
     const [wires, setWires] = useState<number[][]>([]);
 
@@ -190,7 +194,7 @@ export const Wires = forwardRef<WiresHandle, WiresProps>(
               fill="#000"
               strokeWidth={3}
               onClick={() => {
-                console.log("Wire CLicked");
+                onClickWire(index);
               }}
             />
           );

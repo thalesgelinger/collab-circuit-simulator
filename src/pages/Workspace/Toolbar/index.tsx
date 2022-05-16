@@ -40,7 +40,7 @@ export const Toolbar = forwardRef<ToolbarHandler, ToolbarProps>(
 
     return (
       show && (
-        <Layer>
+        <Layer draggable={false}>
           {showTools ? (
             <Tools
               onComponentDragStart={onComponentDragStart}

@@ -892,11 +892,131 @@ export const Workspace = () => {
     }
   };
 
-  const remove = (elementClicked: ComponentType | Wire) => {
+  const handleWireClick = (wireIndex: number) => {
+    const actions = {
+      remove,
+    } as {
+      [key: string]: (component: ComponentType | number) => void;
+    };
+
+    if (!!actions?.[action]) {
+      actions[action](wireIndex);
+    }
+  };
+
+  const remove = (elementClicked: ComponentType | number) => {
     if ((elementClicked as ComponentType)?.componentType) {
       removeComponent(elementClicked as ComponentType);
     }
-    //TODO: remove wire
+    if (typeof elementClicked === "number") {
+      removeWire(elementClicked);
+    }
+  };
+
+  const removeWire = (wireIndex: number) => {
+    const { wires } = wireRef.current!;
+
+    const wiresIndexToRemove = findAllWiresToRemove(wireIndex);
+
+    const wiresToRemove = wiresIndexToRemove.map((i) => wires[i]).flat();
+
+    const [start, end] = findStartAndEndPoint(wiresToRemove);
+
+    const [componentAtStart, terminalAtStart] =
+      findComponentAndTerminalConnectedByWire(start);
+
+    const [componentAtEnd, terminalAtEnd] =
+      findComponentAndTerminalConnectedByWire(end);
+
+    if (componentAtStart && terminalAtStart) {
+      updateComponentTerminalNode({
+        component: componentAtStart,
+        terminal: terminalAtStart!,
+        node: "",
+      });
+    }
+
+    if (componentAtEnd && terminalAtEnd) {
+      updateComponentTerminalNode({
+        component: componentAtEnd,
+        terminal: terminalAtEnd!,
+        node: "",
+      });
+    }
+
+    wireRef.current?.setWires((wires) =>
+      wires.filter((_, i) => !wiresIndexToRemove.includes(i))
+    );
+  };
+
+  const findAllWiresToRemove = (wireIndex: number) => {
+    const { wires } = wireRef.current!;
+
+    const wiresToRemove = [wireIndex];
+
+    const [startPointOriginal, endPointOriginal] = findStartAndEndPoint(
+      wires[wireIndex]
+    );
+
+    const prevWires = findPrevWires(startPointOriginal);
+    const nextWires = findNextWires(endPointOriginal);
+
+    wiresToRemove.unshift(...prevWires);
+    wiresToRemove.push(...nextWires);
+
+    return wiresToRemove;
+  };
+
+  const findStartAndEndPoint = (wire: number[]) => {
+    const start = {
+      x: wire[0],
+      y: wire[1],
+    };
+
+    const end = {
+      x: wire[wire!.length - 2],
+      y: wire[wire!.length - 1],
+    };
+
+    return [start, end];
+  };
+  const findPrevWires = (
+    startPoint: Position,
+    prevWiresIndex = [] as number[]
+  ): number[] => {
+    const { wires } = wireRef.current!;
+
+    const indexWirePrev = wires.findIndex((wire) => {
+      const [_, end] = findStartAndEndPoint(wire);
+
+      return compareObjects(end, startPoint);
+    });
+
+    if (indexWirePrev >= 0) {
+      prevWiresIndex.unshift(indexWirePrev);
+      const [start] = findStartAndEndPoint(wires[indexWirePrev]);
+      return findPrevWires(start, prevWiresIndex);
+    }
+    return prevWiresIndex;
+  };
+
+  const findNextWires = (
+    endPoint: Position,
+    nextWiresIndex = [] as number[]
+  ) => {
+    const { wires } = wireRef.current!;
+
+    const indexWireNext = wires.findIndex((wire) => {
+      const [start, _] = findStartAndEndPoint(wire);
+
+      return compareObjects(start, endPoint);
+    });
+    if (indexWireNext >= 0) {
+      nextWiresIndex.push(indexWireNext);
+      const [start] = findStartAndEndPoint(wires[indexWireNext]);
+      return findPrevWires(start, nextWiresIndex);
+    }
+    return nextWiresIndex;
   };
 
   return (
@@ -962,6 +1082,7 @@ export const Workspace = () => {
                   userId={userId}
                   lastEdited={lastEdited}
                   simulation={state.simulation}
+                  onClickWire={handleWireClick}
                 />
                 {intersections.map(({ x, y }, i) => (
                   <Circle
