@@ -57,7 +57,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
   const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
     if (!!onDragEnd) {
-      onDragEnd(componentData);
+      onDragEnd(componentData!);
     }
 
     if (backToOrigin) {
@@ -82,7 +82,9 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
   const handleDoubleClick = async () => {
     const tools = {
       voltimeter: async () => {
-        const nodes = await simulation.getVoltageNodes();
+        const nodes = (await simulation.getVoltageNodes()) as {
+          [key: string]: string;
+        };
         const measuredKeyPositive = Object.keys(nodes).find((key) =>
           key.includes(componentData!.nodes.positive.value)
         )!;
@@ -90,13 +92,13 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
           key.includes(componentData!.nodes.negative.value)
         )!;
         const measuredValue = !!nodes?.[measuredKeyNegative]
-          ? nodes[measuredKeyPositive] - nodes[measuredKeyNegative]
+          ? Number(nodes[measuredKeyPositive]) -
+            Number(nodes[measuredKeyNegative])
           : nodes[measuredKeyPositive];
 
-        setMeasureValue(measuredValue);
+        setMeasureValue(String(measuredValue));
       },
       osciloscope: async () => {
-        console.log("RUN OSCILLOCOPE");
         const response = await simulation.getPulseSimulationNodes();
 
         const waveForOsciloscopeConnectedNode = response.map((data) => {
@@ -110,7 +112,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
         dispatch(updateOscilloscopeData(waveForOsciloscopeConnectedNode));
       },
-    };
+    } as { [key: string]: () => Promise<void> };
 
     if (tools.hasOwnProperty(componentData!.componentType)) {
       await tools[componentData!.componentType]();
@@ -147,7 +149,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
           onSubmit={submitNewLabel}
         />
       ),
-    };
+    } as { [key: string]: () => JSX.Element };
 
     if (forms?.[formType]) {
       return forms[formType]();
@@ -215,7 +217,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
         </>
       )}
 
-      {editingLabel && getForm(componentData?.componentType)}
+      {editingLabel && getForm(componentData!.componentType)}
 
       {measureValue !== "" && (
         <Html
@@ -236,9 +238,6 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
               borderRadius: 10,
             }}
             draggable
-            onDrag={(e) => {
-              console.log({ e: e.target.getBoundingClientRect() });
-            }}
           >
             <h3>{measureValue}</h3>
           </div>

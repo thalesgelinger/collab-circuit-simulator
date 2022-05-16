@@ -133,6 +133,6 @@ export class Simulation {
 
     console.log({ nodesMappedValues });
 
-    return nodesMappedValues;
+    return nodesMappedValues as { time: string; [key: string]: string }[];
   }
 }

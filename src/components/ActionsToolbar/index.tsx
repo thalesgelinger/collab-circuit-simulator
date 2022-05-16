@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { ComponentType } from "../../@types";
 import { Simulation } from "../../models/Simulation";
-import { ActionTypes, addCircuit } from "../../services/redux/simulationSlice";
+import { addCircuit } from "../../services/redux/simulationSlice";
 import { RootState } from "../../services/redux/store";
 import { Icon } from "../Icon";
 
@@ -12,6 +12,16 @@ import styles from "./styles.module.scss";
 // import { runSpice } from "../../wasm/runner.js";
 
 const ICON_DEFAULT_SIZE = 40;
+
+type ActionTypes =
+  | "edit"
+  | "goback"
+  | "simulate"
+  | "simulatestop"
+  | "print"
+  | "rotate"
+  | "remove"
+  | "";
 
 interface ActionsToolbarProps {
   onActionChange: (actionType: ActionTypes) => void;
@@ -25,8 +35,6 @@ export const ActionsToolbar = ({
   const [action, setAction] = useState("");
 
   const dispatch = useDispatch();
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     document.addEventListener("keydown", (event) => {
@@ -110,7 +118,7 @@ export const ActionsToolbar = ({
         color={"#black"}
         onClick={handleActionsChange("remove")}
         style={{
-          border: `1px solid ${action === "trash" ? "black" : "transparent"}`,
+          border: `1px solid ${action === "remove" ? "black" : "transparent"}`,
           borderRadius: ICON_DEFAULT_SIZE / 4,
         }}
       />
