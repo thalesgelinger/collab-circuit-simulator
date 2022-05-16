@@ -41,8 +41,7 @@ export const Oscilloscope = () => {
   );
 
   useEffect(() => {
-    console.log({});
-    if (!!simulation) {
+    if (!!simulation && !!oscilloscopeData?.length) {
       setData(oscilloscopeData);
     }
   }, [oscilloscopeData]);
