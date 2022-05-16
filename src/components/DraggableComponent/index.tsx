@@ -1,13 +1,5 @@
 import { KonvaEventObject } from "konva/lib/Node";
-import {
-  ChangeEvent,
-  ElementRef,
-  FormEvent,
-  useEffect,
-  useReducer,
-  useRef,
-  useState,
-} from "react";
+import { ElementRef, useReducer, useRef, useState } from "react";
 import { Image, Text, Circle, Group } from "react-konva";
 import { ComponentType } from "../../@types";
 import useImage from "use-image";
@@ -15,9 +7,9 @@ import { Html } from "react-konva-utils";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../services/redux/store";
 import { Position } from "../../@types/ComponentType";
-import { updateCircuit } from "../../services/redux/simulationSlice";
 import { DefaultComponentForm } from "./DefaultComponentForm";
 import { PulseComponentForm } from "./PulseComponentForm";
+import { updateOscilloscopeData } from "../../services/redux/simulationSlice";
 
 interface DraggableComponentProps {
   size: number;
@@ -57,7 +49,9 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
   const [component, setComponent] = useState(componentData);
 
-  const { simulation, circuit, wire, wires } = useSelector(
+  const dispatch = useDispatch();
+
+  const { simulation, circuit } = useSelector(
     (state: RootState) => state.simulation
   );
 
@@ -81,28 +75,45 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
       return id === component.id;
     });
     circuitCopy[componentIndex] = component;
-    console.log("CIRCUIT COPY:", { circuitCopy });
     onCircuitUpdate(circuitCopy);
     toggleEditingLabel();
   };
 
   const handleDoubleClick = async () => {
-    const tools = ["voltimeter"];
+    const tools = {
+      voltimeter: async () => {
+        const nodes = await simulation.getVoltageNodes();
+        const measuredKeyPositive = Object.keys(nodes).find((key) =>
+          key.includes(componentData!.nodes.positive.value)
+        )!;
+        const measuredKeyNegative = Object.keys(nodes).find((key) =>
+          key.includes(componentData!.nodes.negative.value)
+        )!;
+        const measuredValue = !!nodes?.[measuredKeyNegative]
+          ? nodes[measuredKeyPositive] - nodes[measuredKeyNegative]
+          : nodes[measuredKeyPositive];
 
-    if (tools.includes(componentData!.componentType)) {
-      const nodes = await simulation.getVoltageNodes();
-      const measuredKeyPositive = Object.keys(nodes).find((key) =>
-        key.includes(componentData!.nodes.positive.value)
-      )!;
-      const measuredKeyNegative = Object.keys(nodes).find((key) =>
-        key.includes(componentData!.nodes.negative.value)
-      )!;
-      const measuredValue = !!nodes?.[measuredKeyNegative]
-        ? nodes[measuredKeyPositive] - nodes[measuredKeyNegative]
-        : nodes[measuredKeyPositive];
+        setMeasureValue(measuredValue);
+      },
+      osciloscope: async () => {
+        console.log("RUN OSCILLOCOPE");
+        const response = await simulation.getPulseSimulationNodes();
 
-      console.log({ measuredValue });
-      setMeasureValue(measuredValue);
+        const waveForOsciloscopeConnectedNode = response.map((data) => {
+          const key = `v(${componentData!.nodes.positive.value})`;
+
+          return {
+            time: data.time,
+            [key]: data[key],
+          };
+        });
+
+        dispatch(updateOscilloscopeData(waveForOsciloscopeConnectedNode));
+      },
+    };
+
+    if (tools.hasOwnProperty(componentData!.componentType)) {
+      await tools[componentData!.componentType]();
     }
   };
 

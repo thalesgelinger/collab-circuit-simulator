@@ -10,12 +10,11 @@ export class Simulation {
 
   constructor(circuitFull: CircuitType) {
     const removeTools = ({ componentType }: ComponentType) => {
-      return !["voltimeter"].includes(componentType);
+      return !["voltimeter", "osciloscope"].includes(componentType);
     };
     this.#nodes = this.#extractNodes(circuitFull);
     const circuit = circuitFull.filter(removeTools);
     this.#netlist = this.#circuitTypeToNetlist(circuit);
-    // this.getPulseSimulationNodes();
   }
 
   get hasCircuit() {
@@ -77,28 +76,17 @@ export class Simulation {
   }
 
   async getPulseSimulationNodes() {
-    const NODES_HEADER_SIZE = 3;
-    // const netlist = this.#netlist.concat("\n.op\n.end");
-
-    const netlist = `Basic RC circuit
-    r 1 2 1.0
-    c 2 0 1.0
-    vin 1 0  pulse (0 1) ac 1
-
-    .tran  0.1 7.0
-    `;
-
     const pulseCommand = `
+    .tran  50u 50m
     .control
-    version
-    run
-    *print ${this.#nodes.map((node) => `v(${node})`).join(" ")}
-    print v(1) v(2)
+      version
+      run
+      print ${this.#nodes.map((node) => `v(${node})`).join(" ")}
     .endc
     .end
     `;
 
-    const netlistSimulation = netlist.concat(pulseCommand);
+    const netlistSimulation = `${this.#netlist}\n${pulseCommand}`;
 
     console.log({ netlistSimulation });
 

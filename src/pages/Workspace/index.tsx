@@ -114,7 +114,7 @@ export const Workspace = () => {
 
   useEffect(() => {
     if (!userId) {
-      navigate("/login", { state: { from: location } });
+      navigate("/", { state: { from: location } });
     }
     return () => {
       if (!!userId) {
@@ -212,7 +212,9 @@ export const Workspace = () => {
       }
 
       if (action === "goback") {
+        toolbarRef.current.hide();
         const img = stageRef.current?.toDataURL();
+        toolbarRef.current.show();
         setCircuitCover(img);
       }
     })();
@@ -362,8 +364,9 @@ export const Workspace = () => {
       capacitor: "C",
       inductor: "L",
       voltimeter: "VOLTMETER_",
-      ohmmimeter: "OHMMIMETER",
+      ohmmimeter: "OHMMIMETER_",
       currentmeter: "CURRENT_",
+      osciloscope: "OSCILLOSCOPE_",
     } as { [key: string]: string };
 
     const numberOfThisComponentTypeInCircuit =
@@ -984,9 +987,7 @@ export const Workspace = () => {
         )}
       </ReactReduxContext.Consumer>
 
-      {/* {!!state?.simulation?.simulation && (
-        <Oscilloscope simulation={state!.simulation.simulation} />
-      )} */}
+      <Oscilloscope />
 
       <div className={styles.toolsSelector}>
         <button onClick={() => setShowTools(true)} disabled={showTools}>

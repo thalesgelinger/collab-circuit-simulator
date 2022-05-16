@@ -27,11 +27,7 @@ ChartJS.register(
   Legend
 );
 
-type OscilloscopeProps = {
-  simulation: Simulation;
-};
-
-export const Oscilloscope = ({ simulation }: OscilloscopeProps) => {
+export const Oscilloscope = () => {
   const [oscilloscopeOn, setOscilloscopeOn] = useState(true);
   const [chartData, setChartData] = useState({
     datasets: [],
@@ -40,15 +36,16 @@ export const Oscilloscope = ({ simulation }: OscilloscopeProps) => {
 
   const [dataset, setData] = useState<any[]>([]);
 
-  //FIXME: solve issue about running simulation more than once
-  // useEffect(() => {
-  //   if (!!simulation) {
-  //     simulation?.getPulseSimulationNodes().then((wave) => {
-  //       console.log({ wave });
-  //       setData(wave);
-  //     });
-  //   }
-  // }, [simulation]);
+  const { simulation, oscilloscopeData } = useSelector(
+    (state: RootState) => state.simulation
+  );
+
+  useEffect(() => {
+    console.log({});
+    if (!!simulation) {
+      setData(oscilloscopeData);
+    }
+  }, [oscilloscopeData]);
 
   const formatDatasetToGraph = (dataset: any[]) => {
     if (!dataset.length) {
@@ -119,7 +116,7 @@ export const Oscilloscope = ({ simulation }: OscilloscopeProps) => {
     });
   }, [dataset]);
 
-  return (
+  return !!oscilloscopeData?.length ? (
     <section className={styles.container}>
       <div className={styles.buttoOsci}>
         <button
@@ -135,6 +132,8 @@ export const Oscilloscope = ({ simulation }: OscilloscopeProps) => {
         )}
       </div>
     </section>
+  ) : (
+    <></>
   );
 };
 

@@ -9,9 +9,29 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 270px;
+  position: relative;
+
+  div {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
 
   img {
     width:300px;
+  }
+
+  & > span:first-of-type {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 5px 10px;
+    cursor: pointer;
+    z-index: 10;
   }
 
 }

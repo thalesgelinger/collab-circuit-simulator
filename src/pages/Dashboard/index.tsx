@@ -58,6 +58,15 @@ export const Dashboard = () => {
     navigate(`/workspace/${hash}`);
   };
 
+  const handleRemove = (id: string) => async () => {
+    const db = getDatabase(app);
+
+    const circuitsUpdated = myCircuits.filter((circuit) => circuit.id !== id);
+
+    await set(ref(db, `users/${user.uid}`), circuitsUpdated);
+    setMyCircuits(circuitsUpdated);
+  };
+
   return (
     <div className={styles.container}>
       <aside>
@@ -80,6 +89,7 @@ export const Dashboard = () => {
               img={img}
               name={name}
               onClick={handleCardClick}
+              onRemove={handleRemove(id)}
             />
           ))}
       </main>

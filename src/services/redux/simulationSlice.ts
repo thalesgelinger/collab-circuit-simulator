@@ -9,6 +9,7 @@ export interface SimulationState {
   wires: number[][];
   cooworkerWires: CooworkerWire[];
   intersections: Position[];
+  oscilloscopeData: { time: string; [key: string]: string }[];
 }
 
 const initialState = {
@@ -34,6 +35,9 @@ export const simulationSlice = createSlice({
     updateCooworkerWires(state, { payload: cooworkerWires }) {
       state.cooworkerWires = cooworkerWires;
     },
+    updateOscilloscopeData(state, { payload: oscilloscopeData }) {
+      state.oscilloscopeData = oscilloscopeData;
+    },
   },
 });
 
@@ -43,6 +47,7 @@ export const {
   updateWires,
   updateIntersection,
   updateCooworkerWires,
+  updateOscilloscopeData,
 } = simulationSlice.actions;
 
 export default simulationSlice.reducer;

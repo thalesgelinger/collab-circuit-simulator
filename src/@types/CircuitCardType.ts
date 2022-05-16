@@ -3,4 +3,5 @@ export interface CircuitCardType {
   img: string;
   name: string;
   onClick(hash: string): void;
+  onRemove(): void;
 }
