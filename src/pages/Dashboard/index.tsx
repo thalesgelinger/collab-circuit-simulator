@@ -71,11 +71,13 @@ export const Dashboard = () => {
     <div className={styles.container}>
       <aside>
         <a onClick={handleLogout}>sair</a>
-        <img src={user.photoURL ? user.photoURL : defaultUser} alt="user" />
+        <div>
+          <img src={user.photoURL ? user.photoURL : defaultUser} alt="user" />
+        </div>
         <span>{user.displayName}</span>
         <Button
           onClick={createNewCircuit}
-          style={{ background: "#ffffff", color: "#000000" }}
+          style={{ background: "#079ca1c5", color: "white" }}
         >
           Novo circuito +
         </Button>

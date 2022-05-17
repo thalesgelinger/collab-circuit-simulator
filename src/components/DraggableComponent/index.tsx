@@ -1,5 +1,5 @@
 import { KonvaEventObject } from "konva/lib/Node";
-import { ElementRef, useReducer, useRef, useState } from "react";
+import { ElementRef, useEffect, useReducer, useRef, useState } from "react";
 import { Image, Text, Circle, Group } from "react-konva";
 import { ComponentType } from "../../@types";
 import useImage from "use-image";
@@ -54,6 +54,11 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
   const { simulation, circuit } = useSelector(
     (state: RootState) => state.simulation
   );
+
+  useEffect(() => {
+    setMeasureValue("");
+    dispatch(updateOscilloscopeData([]));
+  }, [circuit]);
 
   const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
     if (!!onDragEnd) {

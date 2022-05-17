@@ -11,6 +11,7 @@
     flex-direction: column;
     max-width: 500px;
     width: 100%;
+    padding: 0 47px;
 
     & > * {
       margin: 10px 0;
@@ -26,6 +27,7 @@
     > .passwordContainer {
       display: flex;
       position: relative;
+      width: 100%;
 
       > .viewPassword {
         align-items: center;

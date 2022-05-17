@@ -43,9 +43,8 @@ export const DefaultComponentForm = ({
           left: position.x,
           width: 150,
           height: 200,
-          backgroundColor: "white",
-          border: "2px solid black",
-          borderRadius: 8,
+          backgroundColor: "#efefef",
+          borderRadius: 6,
           padding: 8,
           display: "flex",
           flexDirection: "column",
@@ -60,6 +59,7 @@ export const DefaultComponentForm = ({
           value={component.name}
           style={{
             width: "100%",
+            border: "none",
           }}
         />
         <label>Value :</label>
@@ -69,9 +69,17 @@ export const DefaultComponentForm = ({
           value={component.value}
           style={{
             width: "100%",
+            border: "none",
           }}
         />
-        <button>Confirm</button>
+        <button
+          style={{
+            background: "#cdcdcd",
+            border: "none",
+          }}
+        >
+          Confirm
+        </button>
       </form>
     </Html>
   );

@@ -9,7 +9,7 @@
     flex-direction: column;
     align-items: center;
     padding: 20px;
-    border-right: 5px solid #a6a6a6;
+    border-right: 5px solid #079ca1c5;
     height: 100%;
     flex: 1;
     & > * {
@@ -32,16 +32,21 @@
       }
     }
 
-    img {
-      border: 1px solid #000000;
-      border-radius: 10px;
-      padding: 20px;
+    div {
+      border: 2px solid #079ca1c5;
+      border-radius: 6px;
+      img {
+        border-radius: 6px;
+        height:100%;
+      }
+    
     }
 
     span {
       font-weight: 400;
       font-size: 32px;
       line-height: 32px;
+      text-align: center;
     }
   }
 
@@ -50,13 +55,15 @@
     flex-direction: row;
     align-items: flex-start;
     justify-content: flex-start;
-    padding: 60px 0;
+    padding: 180px 0;
     width: 100%;
     flex-wrap: wrap;
     overflow: auto;
     flex: 5;
     & > * {
-      margin: 10px 30px;
+      margin: 22px 27px;
+      height: 150px;
+      width: 230px;
     }
   }
 }

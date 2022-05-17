@@ -60,6 +60,8 @@ export const compareObjects = (obj1: object, obj2: object) => {
   return JSON.stringify(obj1) === JSON.stringify(obj2);
 };
 
+const marginTop = (window.innerHeight * (1 - 0.8275)) / 2;
+
 export const Workspace = () => {
   const { id } = useParams();
 
@@ -92,9 +94,11 @@ export const Workspace = () => {
 
   const stageRef = useRef<ElementRef<typeof Stage>>(null);
 
-  const {
-    user: { uid: userId },
-  } = useAuth();
+  // const {
+  //   user: { uid: userId },
+  // } = useAuth();
+
+  const userId = "batata";
 
   const location = useLocation();
 
@@ -104,14 +108,14 @@ export const Workspace = () => {
 
   const db = getDatabase(app);
 
-  useEffect(() => {
-    console.log({ nodes });
-    (async () => {
-      if (nodes > 1) {
-        await set(ref(db, `circuits/${id}/nodes`), nodes);
-      }
-    })();
-  }, [nodes]);
+  // useEffect(() => {
+  //   console.log({ nodes });
+  //   (async () => {
+  //     if (nodes > 1) {
+  //       await set(ref(db, `circuits/${id}/nodes`), nodes);
+  //     }
+  //   })();
+  // }, [nodes]);
 
   useEffect(() => {
     if (!userId) {
@@ -1111,12 +1115,31 @@ export const Workspace = () => {
 
       <Oscilloscope />
 
-      <div className={styles.toolsSelector}>
-        <button onClick={() => setShowTools(true)} disabled={showTools}>
-          tools
+      <div
+        className={styles.toolsSelector}
+        style={{
+          top: marginTop - 50,
+        }}
+      >
+        <button
+          onClick={() => setShowTools(true)}
+          style={{
+            backgroundColor: !showTools
+              ? "rgba(255, 255, 255, 0.1647)"
+              : "#efefef",
+          }}
+        >
+          TOOLS
         </button>
-        <button onClick={() => setShowTools(false)} disabled={!showTools}>
-          components
+        <button
+          onClick={() => setShowTools(false)}
+          style={{
+            backgroundColor: showTools
+              ? "rgba(255, 255, 255, 0.1647)"
+              : "#efefef",
+          }}
+        >
+          COMPONENTS
         </button>
       </div>
     </div>

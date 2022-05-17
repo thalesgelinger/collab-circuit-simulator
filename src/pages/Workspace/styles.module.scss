@@ -5,15 +5,20 @@
 
 .toolsSelector {
   position: absolute;
-  top: 30px;
   right: 0px;
-  width: 80px;
+  display: flex;
+  border-radius: 6px;
+  overflow: hidden;
 
   button {
     border: none;
     width: 100%;
-    height: 30px;
-    
+    padding: 12px;
+    cursor: pointer;
+
+    &:disabled {
+      cursor:auto;
+    }
   }
 
 }

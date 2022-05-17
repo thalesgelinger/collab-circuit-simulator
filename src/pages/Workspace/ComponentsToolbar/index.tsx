@@ -16,10 +16,12 @@ interface ComponentsToolbarProps {
 
 const ITEM_SIZE = 20;
 
+const toolbarHeight = window.innerHeight * 0.8275;
+
 const TOOLBAR_DIMENSIONS = {
-  width: 4 * ITEM_SIZE,
-  height: window.innerHeight * 0.8,
-  marginTop: window.innerHeight * 0.1,
+  width: 3 * ITEM_SIZE,
+  height: toolbarHeight,
+  marginTop: (window.innerHeight - toolbarHeight) / 2,
 };
 
 const ToolbarShape = () => {
@@ -49,12 +51,12 @@ export const ComponentsToolbar = ({
       value: "5",
       angle: 90,
     } as ComponentType,
-    {
-      componentType: "ac_source",
-      image: components.ac_source,
-      value: "0",
-      angle: 90,
-    } as ComponentType,
+    // {
+    //   componentType: "ac_source",
+    //   image: components.ac_source,
+    //   value: "0",
+    //   angle: 90,
+    // } as ComponentType,
     {
       componentType: "pulse_source",
       image: components.pulse_source,
@@ -121,8 +123,8 @@ export const ComponentsToolbar = ({
           componentData={component}
           key={i}
           size={itemSize}
-          x={horizontalToolbarCenter + i + ITEM_SIZE * 2}
-          y={toolbarDistanceFromTop + i * componentsYFactor}
+          x={horizontalToolbarCenter + i + ITEM_SIZE * 2.5}
+          y={toolbarDistanceFromTop + 10 + i * componentsYFactor}
           onDragStart={handleComponentDragEnd(component)}
           onDragMove={handleComponentDragMove(component)}
           onDragEnd={onComponentDragEnd}

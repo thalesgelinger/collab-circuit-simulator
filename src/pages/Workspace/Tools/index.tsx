@@ -16,10 +16,12 @@ interface ComponentsToolbarProps {
 
 const ITEM_SIZE = 20;
 
+const toolbarHeight = window.innerHeight * 0.8275;
+
 const TOOLBAR_DIMENSIONS = {
-  width: 4 * ITEM_SIZE,
-  height: window.innerHeight * 0.8,
-  marginTop: window.innerHeight * 0.1,
+  width: 3 * ITEM_SIZE,
+  height: toolbarHeight,
+  marginTop: (window.innerHeight - toolbarHeight) / 2,
 };
 
 const ToolsShape = () => {
@@ -48,25 +50,25 @@ export const Tools = ({
       componentType: "voltimeter",
       image: tools.voltimeter,
       value: "0",
-      angle: 0,
+      angle: 90,
     } as ComponentType,
-    {
-      componentType: "currentmeter",
-      image: tools.currentmeter,
-      value: "0",
-      angle: 0,
-    } as ComponentType,
-    {
-      componentType: "ohmmimeter",
-      image: tools.ohmmimeter,
-      value: "0",
-      angle: 0,
-    } as ComponentType,
+    // {
+    //   componentType: "currentmeter",
+    //   image: tools.currentmeter,
+    //   value: "0",
+    //   angle: 90,
+    // } as ComponentType,
+    // {
+    //   componentType: "ohmmimeter",
+    //   image: tools.ohmmimeter,
+    //   value: "0",
+    //   angle: 90,
+    // } as ComponentType,
     {
       componentType: "osciloscope",
       image: tools.osciloscope,
       value: "0",
-      angle: 0,
+      angle: 90,
     } as ComponentType,
   ];
 
@@ -104,8 +106,8 @@ export const Tools = ({
           componentData={component}
           key={i}
           size={itemSize}
-          x={horizontalToolbarCenter + i}
-          y={toolbarDistanceFromTop + i * componentsYFactor}
+          x={horizontalToolbarCenter + i + ITEM_SIZE * 2.5}
+          y={toolbarDistanceFromTop + 37 + i * componentsYFactor}
           onDragStart={handleComponentDragEnd(component)}
           onDragMove={handleComponentDragMove(component)}
           onDragEnd={onComponentDragEnd}
