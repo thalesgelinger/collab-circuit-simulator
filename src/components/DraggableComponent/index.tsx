@@ -24,6 +24,11 @@ interface DraggableComponentProps {
   componentData?: ComponentType;
 }
 
+type MeasuredValue = {
+  position: Position;
+  value: string;
+};
+
 export const DraggableComponent = (props: DraggableComponentProps) => {
   const {
     size,
@@ -43,7 +48,9 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
   const [editingLabel, toggleEditingLabel] = useReducer((s) => !s, false);
 
-  const [measureValue, setMeasureValue] = useState("");
+  const [measureValues, setMeasureValues] = useState<MeasuredValue[]>(
+    [] as MeasuredValue[]
+  );
 
   const [image] = useImage(componentData!.image);
 
@@ -56,7 +63,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
   );
 
   useEffect(() => {
-    setMeasureValue("");
+    setMeasureValues([]);
     dispatch(updateOscilloscopeData([]));
   }, [circuit]);
 
@@ -101,7 +108,22 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
             Number(nodes[measuredKeyNegative])
           : nodes[measuredKeyPositive];
 
-        setMeasureValue(String(measuredValue));
+        const voltageMeasure = {
+          position: componentData!.position,
+          value: String(measuredValue),
+        };
+
+        setMeasureValues([voltageMeasure, ...measureValues]);
+      },
+      currentmeter: async () => {
+        const current = await simulation.getCurrent();
+
+        const voltageMeasure = {
+          position: componentData!.position,
+          value: current[componentData!.name],
+        };
+
+        setMeasureValues([voltageMeasure, ...measureValues]);
       },
       osciloscope: async () => {
         const response = await simulation.getPulseSimulationNodes();
@@ -224,7 +246,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
       {editingLabel && getForm(componentData!.componentType)}
 
-      {measureValue !== "" && (
+      {measureValues.map(({ value, position: { x, y } }, i) => (
         <Html
           divProps={{
             style: {
@@ -233,7 +255,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
           }}
         >
           <div
-            key={componentData?.id}
+            key={i}
             style={{
               position: "absolute",
               top: y,
@@ -244,10 +266,10 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
             }}
             draggable
           >
-            <h3>{measureValue}</h3>
+            <h3>{value}</h3>
           </div>
         </Html>
-      )}
+      ))}
     </>
   );
 };

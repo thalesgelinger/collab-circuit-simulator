@@ -52,12 +52,12 @@ export const Tools = ({
       value: "0",
       angle: 90,
     } as ComponentType,
-    // {
-    //   componentType: "currentmeter",
-    //   image: tools.currentmeter,
-    //   value: "0",
-    //   angle: 90,
-    // } as ComponentType,
+    {
+      componentType: "currentmeter",
+      image: tools.currentmeter,
+      value: "0",
+      angle: 90,
+    } as ComponentType,
     // {
     //   componentType: "ohmmimeter",
     //   image: tools.ohmmimeter,

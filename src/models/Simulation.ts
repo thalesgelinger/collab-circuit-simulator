@@ -23,6 +23,7 @@ export class Simulation {
   }
 
   async #run(netlist: string) {
+    console.log({ simlationNetlist: netlist });
     const ngspiceScript = `/wasm/ngspice.js`;
     const netlistResult = await window.runSpice(netlist, ngspiceScript);
     const oldRunner = document.getElementById("runner");
@@ -57,7 +58,8 @@ export class Simulation {
           " "
         );
       })
-      .join("\n");
+      .join("\n")
+      .replace(/CURRENT_/g, "vAmp");
     return `Circuit \n ${netlist}`;
   }
 
@@ -86,6 +88,39 @@ export class Simulation {
       }, {} as { [key: string]: string });
 
     return voltageNodes;
+  }
+
+  async getCurrent() {
+    const netlist = this.#netlist.concat("\n.op\n.end");
+    this.#resultData = await this.#run(netlist);
+
+    const onlyCurrentValues = this.#resultData
+      .filter((data) => data.includes("#branch"))
+      .filter((v) => !v.toLowerCase().startsWith("vamp"));
+
+    const currentNodesArray = onlyCurrentValues.map((raw) => {
+      const [key, value] = raw
+        .replace("\t", "")
+        .split(" ")
+        .filter((v) => !!v);
+
+      const formattedKey = key
+        .replace("#branch", "")
+        .replace(/vamp/g, "CURRENT_");
+
+      return {
+        [formattedKey]: value,
+      };
+    });
+
+    const currentNodes = currentNodesArray.reduce((acc, current) => {
+      return {
+        ...acc,
+        ...current,
+      };
+    }, {});
+
+    return currentNodes;
   }
 
   async getPulseSimulationNodes() {
