@@ -23,7 +23,8 @@ export class Simulation {
   }
 
   async #run(netlist: string) {
-    const netlistResult = await window.runSpice(netlist, "/wasm/ngspice.js");
+    const ngspiceScript = `/wasm/ngspice.js`;
+    const netlistResult = await window.runSpice(netlist, ngspiceScript);
     const oldRunner = document.getElementById("runner");
     oldRunner?.remove();
 
