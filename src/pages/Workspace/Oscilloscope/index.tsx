@@ -14,7 +14,6 @@ import { Line } from "react-chartjs-2";
 import styles from "./styles.module.scss";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../services/redux/store";
-import { Simulation } from "../../../models/Simulation";
 import Konva from "konva";
 
 ChartJS.register(
@@ -42,7 +41,16 @@ export const Oscilloscope = () => {
 
   useEffect(() => {
     if (!!simulation && !!oscilloscopeData?.length) {
-      setData(oscilloscopeData);
+      if (!!dataset.length) {
+        setData((data) =>
+          data.map((value, i) => ({
+            ...value,
+            ...oscilloscopeData[i],
+          }))
+        );
+      } else {
+        setData(oscilloscopeData);
+      }
     }
   }, [oscilloscopeData]);
 
