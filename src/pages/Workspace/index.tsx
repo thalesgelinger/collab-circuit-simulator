@@ -344,7 +344,7 @@ export const Workspace = () => {
           },
         },
         negative: {
-          value: isSource(event.componentType) ? "0" : "",
+          value: getNegativeInitialValue(event.componentType),
           position: {
             x: event.target.x() + blockSnapSize * 2,
             y: event.target.y() + blockSnapSize,
@@ -354,6 +354,20 @@ export const Workspace = () => {
     } as ComponentType;
     console.log({ component });
     setCircuit([component, ...circuit]);
+  };
+
+  const getNegativeInitialValue = (componentType: ComponentsKeys) => {
+    const hasSourceOnCircuitAlready = (componentType: ComponentsKeys) => {
+      return circuit.some(
+        (component) => component.componentType === componentType
+      );
+    };
+
+    return isSource(componentType)
+      ? hasSourceOnCircuitAlready(componentType)
+        ? ""
+        : "0"
+      : "";
   };
 
   const isSource = (type: string) => type.endsWith("_source");
@@ -410,7 +424,7 @@ export const Workspace = () => {
     const { wire, wires, setWire, setWires, points } = wireRef.current!;
 
     if (!hasClickedToComponentTerminal(evt)) {
-      console.log("NAO CONECTOU NO COMPONENTE IMBECIL");
+      console.log("NAO CONECTOU NO COMPONENTE");
     }
 
     if (!wire?.from) {
