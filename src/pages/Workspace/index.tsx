@@ -431,6 +431,8 @@ export const Workspace = () => {
 
     if (!wire?.from) {
       createWire(evt);
+      console.log("AQUIIIIIIIIIIIIIIIIII");
+
       return;
     }
 
@@ -632,7 +634,10 @@ export const Workspace = () => {
 
     const component = findComponentByWirePosition(from);
 
-    console.log({ component });
+    if (wireConnectedToOtherWire(from)) {
+      setIntersections([...intersections, from]);
+      return;
+    }
 
     if (!component) {
       return;
@@ -950,7 +955,7 @@ export const Workspace = () => {
       updateComponentTerminalNode({
         component: componentAtStart,
         terminal: terminalAtStart!,
-        node: "",
+        node: componentAtStart.nodes[terminalAtStart].value === "0" ? "0" : "",
       });
     }
 
@@ -958,7 +963,7 @@ export const Workspace = () => {
       updateComponentTerminalNode({
         component: componentAtEnd,
         terminal: terminalAtEnd!,
-        node: "",
+        node: componentAtEnd.nodes[terminalAtEnd].value === "0" ? "0" : "",
       });
     }
 
