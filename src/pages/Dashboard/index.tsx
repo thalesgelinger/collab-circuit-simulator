@@ -3,9 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, CircuitCard } from "../../components";
 
-import defaultUser from "../../assets/icons/user.png";
-
-import circuitSample from "../../assets/circuit-sample.png";
+import defaultUser from "/assets/icons/user.png";
 
 import styles from "./styles.module.scss";
 import { CircuitCardType } from "../../@types";

@@ -17,9 +17,8 @@ import {
   GoogleIcon,
   FacebookIcon,
   Hidden,
-} from "../../assets/index";
+} from "../../assets/icons";
 import { changeUser } from "../../services/redux/userSlice";
-import { RootState } from "../../services/redux/store";
 import styles from "./styles.module.scss";
 
 export const Login = () => {

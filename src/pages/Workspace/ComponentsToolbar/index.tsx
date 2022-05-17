@@ -3,7 +3,7 @@ import { Rect } from "react-konva";
 import { ComponentType } from "../../../@types";
 import { useState } from "react";
 import { DraggableComponent } from "../../../components";
-import { components } from "../../../assets/simulation/components";
+import { components } from "../../../assets/component";
 
 export type DraggableComponentType = KonvaEventObject<DragEvent> &
   ComponentType;
