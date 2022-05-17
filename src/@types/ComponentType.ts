@@ -14,6 +14,7 @@ interface ComponentsTypes {
   dc_source: VoltageSourceNodes;
   ac_source: VoltageSourceNodes;
   pulse_source: VoltageSourceNodes;
+  diode: DiodeNodes;
 }
 
 interface ResistorNodes {
@@ -26,6 +27,11 @@ interface CapacitorNodes {
   negative: string;
 }
 interface InductorNodes {
+  positive: string;
+  negative: string;
+}
+
+interface DiodeNodes {
   positive: string;
   negative: string;
 }

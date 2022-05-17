@@ -142,6 +142,12 @@ export class Simulation {
 
     console.log({ resultCircuit: this.#resultData });
 
+    const nodesMappedValues = this.#formatResponseDataToOscilloscope();
+
+    return nodesMappedValues;
+  }
+
+  async #formatResponseDataToOscilloscope() {
     const indeValuesStart = this.#resultData.findIndex((value) => {
       return value.startsWith("Index");
     });
@@ -165,6 +171,9 @@ export class Simulation {
       )
       .map((line) => {
         const [index, time, ...nodesValues] = line.split("\t");
+
+        const keys = this.#nodes.map((node) => `v(${node})`);
+
         return {
           time,
           ...nodesValues
@@ -172,15 +181,40 @@ export class Simulation {
             .reduce(
               (acc, current, i) => ({
                 ...acc,
-                [`v(${i + 1})`]: current,
+                [keys[i]]: current,
               }),
               {}
             ),
         };
       });
-
-    console.log({ nodesMappedValues });
-
     return nodesMappedValues as { time: string; [key: string]: string }[];
+  }
+
+  async getWave() {
+    const frequency = this.#netlist.split("(")[1].split(" ")[2];
+    const period = 1 / Number(frequency);
+
+    const pulseCommand = `
+    .model generic D
+    .tran  {${period}/100} {5*${period}}
+    .control
+      version
+      run
+      print ${this.#nodes.map((node) => `v(${node})`).join(" ")}
+    .endc
+    .end
+    `;
+
+    const netlistSimulation = `${this.#netlist}\n${pulseCommand}`;
+
+    console.log({ netlistSimulation });
+
+    this.#resultData = await this.#run(netlistSimulation);
+
+    console.log({ resultCircuit: this.#resultData });
+
+    const nodesMappedValues = this.#formatResponseDataToOscilloscope();
+
+    return nodesMappedValues;
   }
 }

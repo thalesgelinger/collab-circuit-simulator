@@ -6,10 +6,11 @@ import useImage from "use-image";
 import { Html } from "react-konva-utils";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../services/redux/store";
-import { Position } from "../../@types/ComponentType";
+import { ComponentsKeys, Position } from "../../@types/ComponentType";
 import { DefaultComponentForm } from "./DefaultComponentForm";
 import { PulseComponentForm } from "./PulseComponentForm";
 import { updateOscilloscopeData } from "../../services/redux/simulationSlice";
+import { AcComponentForm } from "./AcComponentForm";
 
 interface DraggableComponentProps {
   size: number;
@@ -126,18 +127,47 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
         setMeasureValues([voltageMeasure, ...measureValues]);
       },
       osciloscope: async () => {
-        const response = await simulation.getPulseSimulationNodes();
+        const oscilloscopeTypes = {
+          pulse_source: async () => {
+            const response = await simulation.getPulseSimulationNodes();
 
-        const waveForOsciloscopeConnectedNode = response.map((data) => {
-          const key = `v(${componentData!.nodes.positive.value})`;
+            const waveForOsciloscopeConnectedNode = response.map((data) => {
+              const key = `v(${componentData!.nodes.positive.value})`;
 
-          return {
-            time: data.time,
-            [key]: data[key],
-          };
-        });
+              return {
+                time: data.time,
+                [key]: data[key],
+              };
+            });
 
-        dispatch(updateOscilloscopeData(waveForOsciloscopeConnectedNode));
+            return waveForOsciloscopeConnectedNode;
+          },
+          ac_source: async () => {
+            const response = await simulation.getWave();
+
+            console.log({ response });
+
+            const waveForOsciloscopeConnectedNode = response.map((data) => {
+              const key = `v(${componentData!.nodes.positive.value})`;
+
+              return {
+                time: data.time,
+                [key]: data[key],
+              };
+            });
+
+            return waveForOsciloscopeConnectedNode;
+          },
+        } as { [key in ComponentsKeys]: () => Promise<any> };
+
+        const source = circuit.find((component) =>
+          component.componentType.endsWith("_source")
+        );
+
+        const run = oscilloscopeTypes[source!.componentType];
+
+        const dataResponse = await run();
+        dispatch(updateOscilloscopeData(dataResponse));
       },
     } as { [key: string]: () => Promise<void> };
 
@@ -176,10 +206,18 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
           onSubmit={submitNewLabel}
         />
       ),
-    } as { [key: string]: () => JSX.Element };
+      ac_source: () => (
+        <AcComponentForm
+          key={componentData!.id}
+          componentData={componentData!}
+          position={{ x, y }}
+          onSubmit={submitNewLabel}
+        />
+      ),
+    } as { [key in ComponentsKeys]: () => JSX.Element };
 
-    if (forms?.[formType]) {
-      return forms[formType]();
+    if (forms?.[formType as ComponentsKeys]) {
+      return forms[formType as ComponentsKeys]();
     }
 
     return (

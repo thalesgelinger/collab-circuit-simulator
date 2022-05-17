@@ -51,12 +51,12 @@ export const ComponentsToolbar = ({
       value: "5",
       angle: 90,
     } as ComponentType,
-    // {
-    //   componentType: "ac_source",
-    //   image: components.ac_source,
-    //   value: "0",
-    //   angle: 90,
-    // } as ComponentType,
+    {
+      componentType: "ac_source",
+      image: components.ac_source,
+      value: "SIN (0 0 0 0 0 0)",
+      angle: 90,
+    } as ComponentType,
     {
       componentType: "pulse_source",
       image: components.pulse_source,
@@ -81,12 +81,12 @@ export const ComponentsToolbar = ({
       value: "100H",
       angle: 90,
     } as ComponentType,
-    // {
-    //   componentType: "inductor",
-    //   image: components.diode,
-    //   value: "100H",
-    //   angle: 90,
-    // } as ComponentType,
+    {
+      componentType: "diode",
+      image: components.diode,
+      value: "generic",
+      angle: 90,
+    } as ComponentType,
   ];
 
   const [draggableComponents, setDraggableComponents] =

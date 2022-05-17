@@ -380,6 +380,7 @@ export const Workspace = () => {
       resistor: "R",
       capacitor: "C",
       inductor: "L",
+      diode: "D",
       voltimeter: "VOLTMETER_",
       ohmmimeter: "OHMMIMETER_",
       currentmeter: "CURRENT_",
