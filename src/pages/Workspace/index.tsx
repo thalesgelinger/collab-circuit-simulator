@@ -94,11 +94,9 @@ export const Workspace = () => {
 
   const stageRef = useRef<ElementRef<typeof Stage>>(null);
 
-  // const {
-  //   user: { uid: userId },
-  // } = useAuth();
-
-  const userId = "batata";
+  const {
+    user: { uid: userId },
+  } = useAuth();
 
   const location = useLocation();
 
@@ -108,14 +106,14 @@ export const Workspace = () => {
 
   const db = getDatabase(app);
 
-  // useEffect(() => {
-  //   console.log({ nodes });
-  //   (async () => {
-  //     if (nodes > 1) {
-  //       await set(ref(db, `circuits/${id}/nodes`), nodes);
-  //     }
-  //   })();
-  // }, [nodes]);
+  useEffect(() => {
+    console.log({ nodes });
+    (async () => {
+      if (nodes > 1) {
+        await set(ref(db, `circuits/${id}/nodes`), nodes);
+      }
+    })();
+  }, [nodes]);
 
   useEffect(() => {
     if (!userId) {
