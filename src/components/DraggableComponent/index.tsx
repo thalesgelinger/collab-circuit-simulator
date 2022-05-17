@@ -231,6 +231,15 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
     );
   };
 
+  const pointerShape = (shape: string) => (e: KonvaEventObject<MouseEvent>) => {
+    const container = e.target.getStage().container();
+
+    container.style.cursor = shape;
+  };
+
+  const tools = ["voltimeter", "currentmeter", "ohmmimeter", "osciloscope"];
+  const isTool = tools.includes(componentData!.componentType);
+
   return (
     <>
       {backToOrigin && (
@@ -258,6 +267,9 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
         onDragEnd={handleDragEnd}
         onDblClick={handleDoubleClick}
         onClick={onComponentClick}
+        onMouseEnter={pointerShape(isTool ? "pointer" : "grab")}
+        onMouseDown={pointerShape(isTool ? "pointer" : "grabbing")}
+        onMouseLeave={pointerShape("default")}
       />
 
       {componentData?.name && (
