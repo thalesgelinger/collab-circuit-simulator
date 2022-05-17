@@ -73,7 +73,7 @@ export const Oscilloscope = () => {
       const color = Konva.Util.getRandomColor();
 
       return {
-        label: key,
+        label: `${key}v`,
         data: dataset.map((s) => s[key]),
         borderColor: color,
         backgroundColor: color,
@@ -83,13 +83,46 @@ export const Oscilloscope = () => {
     return datasetFormatted;
   };
 
+  const formatToSI = (n: number) => {
+    const unitList = [
+      "y",
+      "z",
+      "a",
+      "f",
+      "p",
+      "n",
+      "u",
+      "m",
+      "",
+      "k",
+      "M",
+      "G",
+      "T",
+      "P",
+      "E",
+      "Z",
+      "Y",
+    ];
+    const zeroIndex = 8;
+    const nn = n.toExponential(2).split(/e/);
+    let u = Math.floor(+nn[1] / 3) + zeroIndex;
+    if (u > unitList.length - 1) {
+      u = unitList.length - 1;
+    } else if (u < 0) {
+      u = 0;
+    }
+    return (
+      (Number(nn[0]) * Math.pow(10, +nn[1] - (u - zeroIndex) * 3)).toFixed(2) +
+      unitList[u]
+    );
+  };
+
   const data = {
-    labels: dataset.map((s) => s.time),
+    labels: dataset.map((s) => `${formatToSI(Number(s.time))}s`),
     datasets: formatDatasetToGraph(dataset),
   };
 
   useEffect(() => {
-    console.log({ data });
     setChartData(data);
 
     setChartOptions({
@@ -110,14 +143,6 @@ export const Oscilloscope = () => {
           type: "linear" as const,
           display: true,
           position: "left" as const,
-        },
-        y1: {
-          type: "linear" as const,
-          display: true,
-          position: "right" as const,
-          grid: {
-            drawOnChartArea: false,
-          },
         },
       },
     });
