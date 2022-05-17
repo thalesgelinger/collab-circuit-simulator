@@ -32,10 +32,6 @@ export const Dashboard = () => {
     }
   }, [user]);
 
-  useEffect(() => {
-    console.log({ myCircuits });
-  }, [myCircuits]);
-
   const handleLogout = () => {
     dispatch(logout());
     navigate("/");
@@ -62,6 +58,7 @@ export const Dashboard = () => {
     const circuitsUpdated = myCircuits.filter((circuit) => circuit.id !== id);
 
     await set(ref(db, `users/${user.uid}`), circuitsUpdated);
+    await remove(ref(db, `circuits/${id}`));
     setMyCircuits(circuitsUpdated);
   };
 

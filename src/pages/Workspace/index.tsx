@@ -116,6 +116,7 @@ export const Workspace = () => {
   }, [nodes]);
 
   useEffect(() => {
+    set(ref(db, `circuits/${id}/editedBy`), "");
     if (!userId) {
       navigate("/", { state: { from: location } });
     }
