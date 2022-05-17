@@ -1,0 +1,84 @@
+.container {
+  align-items: center;
+  display: flex;
+  font-size: 1.5rem;
+  height: 100vh;
+  justify-content: center;
+
+  main {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    max-width: 500px;
+    width: 100%;
+    padding: 0 47px;
+
+    & > * {
+      margin: 10px 0;
+    }
+
+    > .title {
+      font-size: 30px;
+      font-weight: bold;
+      margin-bottom: 30px;
+      color: #079ca1c5;
+    }
+
+    > .passwordContainer {
+      display: flex;
+      position: relative;
+      width: 100%;
+
+      > .viewPassword {
+        align-items: center;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        height: 45px;
+        justify-content: center;
+        position: absolute;
+        right: 0;
+        width: 40px;
+
+        &:hover {
+          opacity: 0.5;
+        }
+
+        .imagePassword {
+          width: 15px;
+        }
+      }
+    }
+
+    .errorView {
+      align-items: center;
+      display: flex;
+      justify-content: center;
+
+      .errorText {
+        color: rgba(255, 0, 0, 0.521);
+        font-size: 14px;
+        margin-left: 5px;
+      }
+    }
+
+    > .lineContainer {
+      align-items: center;
+      color: silver;
+      display: flex;
+      font-size: 18px;
+      justify-content: space-between;
+      width: 400px;
+
+      > .line {
+        border-bottom: 1px solid silver;
+        width: 180px;
+      }
+    }
+
+    .textButton {
+      margin-left: 15px;
+    }
+  }
+}
