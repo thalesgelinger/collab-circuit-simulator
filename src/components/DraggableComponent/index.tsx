@@ -11,6 +11,7 @@ import { DefaultComponentForm } from "./DefaultComponentForm";
 import { PulseComponentForm } from "./PulseComponentForm";
 import { updateOscilloscopeData } from "../../services/redux/simulationSlice";
 import { AcComponentForm } from "./AcComponentForm";
+import { formatToSi } from "../../utils/formatToSI";
 
 interface DraggableComponentProps {
   size: number;
@@ -107,11 +108,11 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
         const measuredValue = !!nodes?.[measuredKeyNegative]
           ? Number(nodes[measuredKeyPositive]) -
             Number(nodes[measuredKeyNegative])
-          : nodes[measuredKeyPositive];
+          : Number(nodes[measuredKeyPositive]);
 
         const voltageMeasure = {
           position: componentData!.position,
-          value: String(measuredValue),
+          value: `${formatToSi(measuredValue)}V`,
         };
 
         setMeasureValues([voltageMeasure, ...measureValues]);
@@ -121,7 +122,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
         const voltageMeasure = {
           position: componentData!.position,
-          value: current[componentData!.name],
+          value: `${formatToSi(Number(current[componentData!.name]))}A`,
         };
 
         setMeasureValues([voltageMeasure, ...measureValues]);
