@@ -90,7 +90,7 @@ export const Dashboard = () => {
             />
           ))
         ) : (
-          <span>
+          <span className={styles.nocircuitmessage}>
             Você ainda não tem nenhum circuito, pressione Novo Circuito para
             começar
           </span>
