@@ -121,14 +121,9 @@ export const ActionsToolbar = ({
           borderRadius: ICON_DEFAULT_SIZE / 4,
         }}
       />
-      <Icon name="left-curly-arrow" size={ICON_DEFAULT_SIZE} color={"#black"} />
+
       <Icon
-        name="right-curly-arrow"
-        size={ICON_DEFAULT_SIZE}
-        color={"#black"}
-      />
-      <Icon
-        name="close"
+        name="back"
         size={ICON_DEFAULT_SIZE}
         color={"#black"}
         onClick={handleActionsChange("goback")}

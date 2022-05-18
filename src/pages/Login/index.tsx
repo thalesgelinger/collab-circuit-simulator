@@ -143,14 +143,14 @@ export const Login = () => {
           <img src={GoogleIcon} alt="" />
           <span className={styles.textButton}>Continuar com Google</span>
         </Button>
-        <Button
+        {/* <Button
           style={{ background: "#3b5898c5" }}
           onClick={actionLoginFacebook}
           type="button"
         >
           <img src={FacebookIcon} alt="" />
           <span className={styles.textButton}>Continuar com Facebook</span>
-        </Button>
+        </Button> */}
       </form>
     </div>
   );
