@@ -1,5 +1,5 @@
-import { useEffect, useReducer, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { FormEventHandler, useEffect, useReducer, useState } from "react";
+import { useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   getAuth,
@@ -8,6 +8,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   User,
+  createUserWithEmailAndPassword,
 } from "firebase/auth";
 import { Button, Input } from "../../components";
 import { app } from "../../services/firebase";
@@ -48,12 +49,23 @@ export const Login = () => {
     }
   }, [user]);
 
-  const actionEmailAndPassword = async () => {
+  const actionEmailAndPassword = async (
+    e: FormEventHandler<HTMLFormElement>,
+    isNewUser = false
+  ) => {
+    e.preventDefault();
     try {
-      const response = await signInWithEmailAndPassword(auth, email, password);
+      const fn = isNewUser
+        ? createUserWithEmailAndPassword
+        : signInWithEmailAndPassword;
+      const response = await fn(auth, email, password);
       dispatch(changeUser(response.user));
+      setUser(response.user);
       setError(false);
     } catch (error) {
+      if (error.code === "auth/user-not-found") {
+        actionEmailAndPassword(e, true);
+      }
       setError(true);
     }
   };
@@ -85,7 +97,7 @@ export const Login = () => {
 
   return (
     <div className={styles.container}>
-      <main>
+      <form onSubmit={actionEmailAndPassword}>
         <span className={styles.title}>Colaborative Circuit Simulator</span>
         <Input
           onChange={(event) => setEmail(event.target.value)}
@@ -107,10 +119,7 @@ export const Login = () => {
             />
           </button>
         </div>
-        <Button
-          style={{ background: "#079ca1c5" }}
-          onClick={actionEmailAndPassword}
-        >
+        <Button style={{ background: "#079ca1c5" }} type="submit">
           Entrar
         </Button>
         {error && (
@@ -126,18 +135,23 @@ export const Login = () => {
           <span>ou</span>
           <div className={styles.line} />
         </div>
-        <Button style={{ background: "#db4939c5" }} onClick={actionLoginGoogle}>
+        <Button
+          style={{ background: "#db4939c5" }}
+          onClick={actionLoginGoogle}
+          type="button"
+        >
           <img src={GoogleIcon} alt="" />
           <span className={styles.textButton}>Continuar com Google</span>
         </Button>
         <Button
           style={{ background: "#3b5898c5" }}
           onClick={actionLoginFacebook}
+          type="button"
         >
           <img src={FacebookIcon} alt="" />
           <span className={styles.textButton}>Continuar com Facebook</span>
         </Button>
-      </main>
+      </form>
     </div>
   );
 };
