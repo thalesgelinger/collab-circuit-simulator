@@ -5,4 +5,7 @@ const reactSvgPlugin = require("vite-plugin-react-svg");
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), reactSvgPlugin()],
+  build: {
+    chunkSizeWarningLimit: 1500,
+  },
 });
