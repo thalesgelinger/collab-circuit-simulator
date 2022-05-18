@@ -1148,7 +1148,7 @@ export const Workspace = () => {
               : "#efefef",
           }}
         >
-          TOOLS
+          FERRAMENTAS
         </button>
         <button
           onClick={() => setShowTools(false)}
@@ -1158,7 +1158,7 @@ export const Workspace = () => {
               : "#efefef",
           }}
         >
-          COMPONENTS
+          COMPONENTES
         </button>
       </div>
     </div>

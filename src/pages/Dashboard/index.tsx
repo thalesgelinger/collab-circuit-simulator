@@ -78,7 +78,7 @@ export const Dashboard = () => {
         </Button>
       </aside>
       <main>
-        {!!myCircuits?.length &&
+        {!!myCircuits?.length ? (
           myCircuits.map(({ id, img, name }) => (
             <CircuitCard
               key={id}
@@ -88,7 +88,13 @@ export const Dashboard = () => {
               onClick={handleCardClick}
               onRemove={handleRemove(id)}
             />
-          ))}
+          ))
+        ) : (
+          <span>
+            Você ainda não tem nenhum circuito, pressione Novo Circuito para
+            começar
+          </span>
+        )}
       </main>
     </div>
   );

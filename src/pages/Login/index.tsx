@@ -98,7 +98,9 @@ export const Login = () => {
   return (
     <div className={styles.container}>
       <form onSubmit={actionEmailAndPassword}>
-        <span className={styles.title}>Colaborative Circuit Simulator</span>
+        <span className={styles.title}>
+          Simulador de circuitos colaborativo
+        </span>
         <Input
           onChange={(event) => setEmail(event.target.value)}
           value={email}

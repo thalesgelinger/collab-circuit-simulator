@@ -9,10 +9,10 @@
     align-items: center;
     display: flex;
     flex-direction: column;
-    max-width: 500px;
+    max-width: 550px;
     width: 100%;
     padding: 0 47px;
-
+    
     & > * {
       margin: 10px 0;
     }
@@ -22,6 +22,7 @@
       font-weight: bold;
       margin-bottom: 30px;
       color: #079ca1c5;
+      font-size: 28px;
     }
 
     > .passwordContainer {

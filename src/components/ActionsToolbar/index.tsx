@@ -98,7 +98,9 @@ export const ActionsToolbar = ({
         color={"#black"}
         onClick={async () => {
           await navigator.clipboard.writeText(window.location.href);
-          alert("Circuit link copied to clipboard");
+          alert(
+            "URL do circuito copiado para área de transferencia, compartilhe com um colega para começarem a trabalhar em equipe"
+          );
         }}
       />
       <Icon
