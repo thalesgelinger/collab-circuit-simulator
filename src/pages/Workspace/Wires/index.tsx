@@ -12,7 +12,7 @@ import {
   useState,
 } from "react";
 import { Line } from "react-konva";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { compareObjects } from "..";
 import { ComponentType } from "../../../@types";
 import { app } from "../../../services/firebase";
@@ -21,6 +21,8 @@ import {
   updateCooworkerWires,
   updateWires,
 } from "../../../services/redux/simulationSlice";
+import { RootState } from "../../../services/redux/store";
+import { pointerShape } from "../../../utils/pointerShape";
 
 export interface Wire {
   from: Vector2d;
@@ -65,6 +67,8 @@ export const Wires = forwardRef<WiresHandle, WiresProps>(
     const isConnectingComponents = !!wire?.from;
 
     const dispatch = useDispatch();
+
+    const { action } = useSelector((state: RootState) => state.simulation);
 
     useImperativeHandle(wireRef, () => ({
       wire,
@@ -196,6 +200,8 @@ export const Wires = forwardRef<WiresHandle, WiresProps>(
               onClick={() => {
                 onClickWire(index);
               }}
+              onMouseOver={pointerShape(action === "edit" ? "copy" : "default")}
+              onMouseLeave={pointerShape("default")}
             />
           );
         })}

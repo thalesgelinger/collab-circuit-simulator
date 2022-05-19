@@ -36,6 +36,7 @@ import {
   run,
   SimulationState,
   stop,
+  updateAction,
   updateCircuit,
   updateIntersection,
 } from "../../services/redux/simulationSlice";
@@ -46,6 +47,7 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
+import { pointerShape } from "../../utils/pointerShape";
 
 type WiresHandle = ElementRef<typeof Wires>;
 
@@ -215,6 +217,7 @@ export const Workspace = () => {
   }, [intersections]);
 
   useEffect(() => {
+    dispatch(updateAction(action));
     (async () => {
       if (action === "simulate") {
         dispatch(addCircuit(circuit));
@@ -969,6 +972,29 @@ export const Workspace = () => {
     const [componentAtEnd, terminalAtEnd] =
       findComponentAndTerminalConnectedByWire(end);
 
+    const isOnWire = (intersection: Position) => {
+      return wiresToRemove.some((x, i) => {
+        const y = wiresToRemove[i];
+        const hasX = x === intersection.x;
+        const hasY = y === intersection.y;
+        return hasX && hasY;
+      });
+    };
+
+    const wiresHasIntersection = intersections.some(isOnWire);
+
+    console.log({ wiresHasIntersection });
+
+    if (wiresHasIntersection) {
+      setIntersections((intersections) => {
+        return intersections.filter((intersection) => !isOnWire(intersection));
+      });
+    }
+
+    wireRef.current?.setWires((wires) =>
+      wires.filter((_, i) => !wiresIndexToRemove.includes(i))
+    );
+
     if (componentAtStart && terminalAtStart) {
       updateComponentTerminalNode({
         component: componentAtStart,
@@ -984,10 +1010,6 @@ export const Workspace = () => {
         node: componentAtEnd.nodes[terminalAtEnd].value === "0" ? "0" : "",
       });
     }
-
-    wireRef.current?.setWires((wires) =>
-      wires.filter((_, i) => !wiresIndexToRemove.includes(i))
-    );
   };
 
   const findAllWiresToRemove = (wireIndex: number) => {

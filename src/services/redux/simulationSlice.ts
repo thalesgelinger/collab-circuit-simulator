@@ -2,6 +2,7 @@ import { CircuitType, Simulation } from "./../../models/Simulation";
 import { createSlice } from "@reduxjs/toolkit";
 import { CooworkerWire, Wire } from "../../pages/Workspace/Wires";
 import { Position } from "../../@types/ComponentType";
+import { ActionTypes } from "../../components/ActionsToolbar";
 
 export interface SimulationState {
   simulation: Simulation;
@@ -11,11 +12,13 @@ export interface SimulationState {
   intersections: Position[];
   oscilloscopeData: { time: string; [key: string]: string }[];
   isRunning: boolean;
+  action: ActionTypes;
 }
 
 const initialState = {
   circuit: [] as CircuitType,
   isRunning: false,
+  action: "",
 } as SimulationState;
 
 export const simulationSlice = createSlice({
@@ -46,6 +49,9 @@ export const simulationSlice = createSlice({
     stop(state) {
       state.isRunning = false;
     },
+    updateAction(state, { payload: action }) {
+      state.action = action;
+    },
   },
 });
 
@@ -58,6 +64,7 @@ export const {
   updateOscilloscopeData,
   run,
   stop,
+  updateAction,
 } = simulationSlice.actions;
 
 export default simulationSlice.reducer;

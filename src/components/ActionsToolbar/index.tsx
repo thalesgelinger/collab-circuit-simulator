@@ -9,11 +9,9 @@ import { Icon } from "../Icon";
 
 import styles from "./styles.module.scss";
 
-// import { runSpice } from "../../wasm/runner.js";
-
 const ICON_DEFAULT_SIZE = 40;
 
-type ActionTypes =
+export type ActionTypes =
   | "edit"
   | "goback"
   | "simulate"

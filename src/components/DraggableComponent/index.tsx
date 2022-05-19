@@ -19,6 +19,7 @@ import { PulseComponentForm } from "./PulseComponentForm";
 import { updateOscilloscopeData } from "../../services/redux/simulationSlice";
 import { AcComponentForm } from "./AcComponentForm";
 import { formatToSi } from "../../utils/formatToSI";
+import { pointerShape } from "../../utils/pointerShape";
 
 interface DraggableComponentProps {
   size: number;
@@ -69,7 +70,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
   const dispatch = useDispatch();
 
-  const { simulation, circuit, isRunning } = useSelector(
+  const { simulation, circuit, isRunning, action } = useSelector(
     (state: RootState) => state.simulation
   );
 
@@ -279,12 +280,6 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
     );
   };
 
-  const pointerShape = (shape: string) => (e: KonvaEventObject<MouseEvent>) => {
-    const container = e.target.getStage().container();
-
-    container.style.cursor = shape;
-  };
-
   const isTool = Object.keys(tools).includes(componentData!.componentType);
 
   return (
@@ -300,6 +295,28 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
         />
       )}
 
+      {!!componentData?.nodes &&
+        Object.keys(componentData.nodes).map((nodeKey) => {
+          const node = componentData!.nodes[nodeKey];
+
+          return (
+            node.value === "" && (
+              <Circle
+                radius={3}
+                fill="white"
+                stroke="black"
+                strokeWidth={1}
+                x={node.position.x}
+                y={node.position.y}
+                onMouseOver={pointerShape(
+                  action === "edit" ? "copy" : "default"
+                )}
+                onMouseLeave={pointerShape("default")}
+              />
+            )
+          );
+        })}
+
       <Image
         image={image}
         ref={ref}
@@ -314,8 +331,12 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
         onDragEnd={handleDragEnd}
         onDblClick={handleDoubleClick}
         onClick={onComponentClick}
-        onMouseEnter={pointerShape(isTool ? "pointer" : "grab")}
-        onMouseDown={pointerShape(isTool ? "pointer" : "grabbing")}
+        onMouseEnter={pointerShape(
+          isTool ? "pointer" : action === "edit" ? "default" : "grab"
+        )}
+        onMouseDown={pointerShape(
+          isTool ? "pointer" : action === "edit" ? "default" : "grabbing"
+        )}
         onMouseLeave={pointerShape("default")}
       />
 
@@ -328,6 +349,8 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
             y={y - 21}
             fontSize={14}
             onDblClick={toggleEditingLabel}
+            onMouseOver={pointerShape("text")}
+            onMouseLeave={pointerShape("default")}
           />
           {componentData?.value && (
             <Text
@@ -340,6 +363,8 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
               y={y - 7}
               fontSize={14}
               onDblClick={toggleEditingLabel}
+              onMouseOver={pointerShape("text")}
+              onMouseLeave={pointerShape("default")}
             />
           )}
         </>
