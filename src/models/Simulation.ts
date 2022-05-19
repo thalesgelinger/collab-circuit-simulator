@@ -8,6 +8,7 @@ export class Simulation {
   #resultData: string[] = [];
   #netlist = "";
   #nodes: number[] = [];
+  #isRunning = false;
 
   constructor(circuitFull: CircuitType) {
     const removeTools = ({ componentType }: ComponentType) => {
@@ -16,10 +17,23 @@ export class Simulation {
     this.#nodes = this.#extractNodes(circuitFull);
     const circuit = circuitFull.filter(removeTools);
     this.#netlist = this.#circuitTypeToNetlist(circuit);
+    console.log("NETLIST BASE: ", { netlist: this.#netlist });
   }
 
   get hasCircuit() {
     return !!this.#netlist;
+  }
+
+  run() {
+    this.#isRunning = true;
+  }
+
+  stop() {
+    this.#isRunning = false;
+  }
+
+  get isRunning() {
+    return this.#isRunning;
   }
 
   async #run(netlist: string) {
@@ -65,7 +79,14 @@ export class Simulation {
 
   async getVoltageNodes() {
     const NODES_HEADER_SIZE = 3;
-    const netlist = this.#netlist.concat("\n.op\n.end");
+
+    const commands = `
+    .model generic D
+    .op
+    .end
+    `;
+
+    const netlist = `${this.#netlist}\n${commands}`;
     this.#resultData = await this.#run(netlist);
 
     const indexNodeVoltageStart = this.#resultData.findIndex((value) => {
@@ -91,7 +112,13 @@ export class Simulation {
   }
 
   async getCurrent() {
-    const netlist = this.#netlist.concat("\n.op\n.end");
+    const commands = `
+    .model generic D
+    .op
+    .end
+    `;
+
+    const netlist = `${this.#netlist}\n${commands}`;
     this.#resultData = await this.#run(netlist);
 
     const onlyCurrentValues = this.#resultData

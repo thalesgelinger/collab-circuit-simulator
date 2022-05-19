@@ -106,6 +106,20 @@ export const Workspace = () => {
 
   const db = getDatabase(app);
 
+  const simulation = useSelector(
+    (state: RootState) => state.simulation.simulation
+  );
+
+  useEffect(() => {
+    if (!!simulation) {
+      if (isSimulationRunning.isRunning) {
+        simulation.run();
+      } else {
+        simulation.stop();
+      }
+    }
+  }, [isSimulationRunning]);
+
   useEffect(() => {
     console.log({ nodes });
     (async () => {

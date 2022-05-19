@@ -94,6 +94,10 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
   };
 
   const handleDoubleClick = async () => {
+    if (!simulation.isRunning) {
+      return;
+    }
+
     const tools = {
       voltimeter: async () => {
         const nodes = (await simulation.getVoltageNodes()) as {
