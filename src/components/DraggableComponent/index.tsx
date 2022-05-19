@@ -64,6 +64,8 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
     [] as MeasuredValue[]
   );
 
+  const [showLabelType, setShowLabelType] = useState(false);
+
   const [image] = useImage(componentData!.image);
 
   const [component, setComponent] = useState(componentData);
@@ -285,14 +287,28 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
   return (
     <>
       {backToOrigin && (
-        <Image
-          image={image}
-          height={size * 2}
-          width={size * 2}
-          x={x}
-          y={y}
-          rotation={componentData?.angle ?? 0}
-        />
+        <>
+          <Image
+            image={image}
+            height={size * 2}
+            width={size * 2}
+            x={x}
+            y={y}
+            rotation={componentData?.angle ?? 0}
+          />
+          {showLabelType && (
+            <Text
+              text={componentData?.componentType}
+              x={
+                x -
+                (size * 4 + Number(componentData?.componentType.length) * 2.5)
+              }
+              y={y + size}
+              width={200}
+              fontSize={14}
+            />
+          )}
+        </>
       )}
 
       {!!componentData?.nodes &&
@@ -331,13 +347,19 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
         onDragEnd={handleDragEnd}
         onDblClick={handleDoubleClick}
         onClick={onComponentClick}
-        onMouseEnter={pointerShape(
-          isTool ? "pointer" : action === "edit" ? "default" : "grab"
-        )}
+        onMouseEnter={(e) => {
+          pointerShape(
+            isTool ? "pointer" : action === "edit" ? "default" : "grab"
+          )(e);
+          setShowLabelType(true);
+        }}
         onMouseDown={pointerShape(
           isTool ? "pointer" : action === "edit" ? "default" : "grabbing"
         )}
-        onMouseLeave={pointerShape("default")}
+        onMouseLeave={(e) => {
+          pointerShape("default")(e);
+          setShowLabelType(false);
+        }}
       />
 
       {componentData?.name && (

@@ -974,16 +974,17 @@ export const Workspace = () => {
 
     const isOnWire = (intersection: Position) => {
       return wiresToRemove.some((x, i) => {
-        const y = wiresToRemove[i];
+        const y = wiresToRemove[i + 1];
         const hasX = x === intersection.x;
         const hasY = y === intersection.y;
+        console.log({ x, y, intersection });
         return hasX && hasY;
       });
     };
 
     const wiresHasIntersection = intersections.some(isOnWire);
 
-    console.log({ wiresHasIntersection });
+    console.log({ wiresHasIntersection, wiresToRemove, intersections });
 
     if (wiresHasIntersection) {
       setIntersections((intersections) => {
