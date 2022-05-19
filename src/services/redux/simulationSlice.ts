@@ -10,10 +10,12 @@ export interface SimulationState {
   cooworkerWires: CooworkerWire[];
   intersections: Position[];
   oscilloscopeData: { time: string; [key: string]: string }[];
+  isRunning: boolean;
 }
 
 const initialState = {
   circuit: [] as CircuitType,
+  isRunning: false,
 } as SimulationState;
 
 export const simulationSlice = createSlice({
@@ -38,6 +40,12 @@ export const simulationSlice = createSlice({
     updateOscilloscopeData(state, { payload: oscilloscopeData }) {
       state.oscilloscopeData = oscilloscopeData;
     },
+    run(state) {
+      state.isRunning = true;
+    },
+    stop(state) {
+      state.isRunning = false;
+    },
   },
 });
 
@@ -48,6 +56,8 @@ export const {
   updateIntersection,
   updateCooworkerWires,
   updateOscilloscopeData,
+  run,
+  stop,
 } = simulationSlice.actions;
 
 export default simulationSlice.reducer;

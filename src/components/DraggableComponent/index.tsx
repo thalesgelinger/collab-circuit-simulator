@@ -1,5 +1,12 @@
 import { KonvaEventObject } from "konva/lib/Node";
-import { ElementRef, useEffect, useReducer, useRef, useState } from "react";
+import {
+  ElementRef,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import { Image, Text, Circle, Group } from "react-konva";
 import { ComponentType } from "../../@types";
 import useImage from "use-image";
@@ -27,8 +34,10 @@ interface DraggableComponentProps {
 }
 
 type MeasuredValue = {
-  position: Position;
+  key: number;
   value: string;
+  position: Position;
+  show?: boolean;
 };
 
 export const DraggableComponent = (props: DraggableComponentProps) => {
@@ -60,45 +69,12 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
   const dispatch = useDispatch();
 
-  const { simulation, circuit } = useSelector(
+  const { simulation, circuit, isRunning } = useSelector(
     (state: RootState) => state.simulation
   );
 
-  useEffect(() => {
-    setMeasureValues([]);
-    dispatch(updateOscilloscopeData([]));
-  }, [circuit]);
-
-  const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
-    if (!!onDragEnd) {
-      onDragEnd(componentData!);
-    }
-
-    if (backToOrigin) {
-      ref?.current?.position({
-        x,
-        y,
-      });
-    }
-  };
-
-  const submitNewLabel = (component: ComponentType) => {
-    setComponent(component);
-    const circuitCopy = Array.from(circuit);
-    const componentIndex = circuit.findIndex(({ id }) => {
-      return id === component.id;
-    });
-    circuitCopy[componentIndex] = component;
-    onCircuitUpdate(circuitCopy);
-    toggleEditingLabel();
-  };
-
-  const handleDoubleClick = async () => {
-    if (!simulation.isRunning) {
-      return;
-    }
-
-    const tools = {
+  const tools = useMemo(() => {
+    return {
       voltimeter: async () => {
         const nodes = (await simulation.getVoltageNodes()) as {
           [key: string]: string;
@@ -115,8 +91,9 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
           : Number(nodes[measuredKeyPositive]);
 
         const voltageMeasure = {
-          position: componentData!.position,
+          key: componentData!.id,
           value: `${formatToSi(measuredValue)}V`,
+          position: componentData!.position,
         };
 
         setMeasureValues([voltageMeasure, ...measureValues]);
@@ -125,8 +102,9 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
         const current = await simulation.getCurrent();
 
         const voltageMeasure = {
-          position: componentData!.position,
+          key: componentData!.id,
           value: `${formatToSi(Number(current[componentData!.name]))}A`,
+          position: componentData!.position,
         };
 
         setMeasureValues([voltageMeasure, ...measureValues]);
@@ -174,10 +152,76 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
         const dataResponse = await run();
         dispatch(updateOscilloscopeData(dataResponse));
       },
-    } as { [key: string]: () => Promise<void> };
+    } as { [key in ComponentsKeys]: () => Promise<void> };
+  }, [isRunning]);
 
+  useEffect(() => {
+    setMeasureValues([]);
+    dispatch(updateOscilloscopeData([]));
+  }, [circuit]);
+
+  useEffect(() => {
+    if (!isRunning) {
+      setMeasureValues([]);
+    }
+
+    if (isRunning) {
+      console.log("VAI RODAR AQUI");
+      getValuesOfConnectedSources();
+    }
+  }, [isRunning]);
+
+  const getValuesOfConnectedSources = async () => {
     if (tools.hasOwnProperty(componentData!.componentType)) {
+      console.log({ circuit });
       await tools[componentData!.componentType]();
+    }
+  };
+
+  const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
+    if (!!onDragEnd) {
+      onDragEnd(componentData!);
+    }
+
+    if (backToOrigin) {
+      ref?.current?.position({
+        x,
+        y,
+      });
+    }
+  };
+
+  const submitNewLabel = (component: ComponentType) => {
+    setComponent(component);
+    const circuitCopy = Array.from(circuit);
+    const componentIndex = circuit.findIndex(({ id }) => {
+      return id === component.id;
+    });
+    circuitCopy[componentIndex] = component;
+    onCircuitUpdate(circuitCopy);
+    toggleEditingLabel();
+  };
+
+  const handleDoubleClick = async () => {
+    if (!simulation.isRunning) {
+      return;
+    }
+
+    if (componentData?.componentType === "osciloscope") {
+      tools.osciloscope();
+    } else {
+      const measured = measureValues.find(
+        ({ key }) => key === componentData!.id
+      );
+
+      setMeasureValues((measureValues) => {
+        return measureValues.map(({ key }) => {
+          return {
+            ...measured,
+            show: measured!.key === key ? !measured?.show : false,
+          };
+        });
+      });
     }
   };
 
@@ -241,8 +285,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
     container.style.cursor = shape;
   };
 
-  const tools = ["voltimeter", "currentmeter", "ohmmimeter", "osciloscope"];
-  const isTool = tools.includes(componentData!.componentType);
+  const isTool = Object.keys(tools).includes(componentData!.componentType);
 
   return (
     <>
@@ -289,7 +332,10 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
           {componentData?.value && (
             <Text
               ref={textRef}
-              text={componentData?.value}
+              text={
+                measureValues.find(({ key }) => componentData.id === key)
+                  ?.value ?? componentData?.value
+              }
               x={x}
               y={y - 7}
               fontSize={14}
@@ -301,30 +347,33 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
       {editingLabel && getForm(componentData!.componentType)}
 
-      {measureValues.map(({ value, position: { x, y } }, i) => (
-        <Html
-          divProps={{
-            style: {
-              position: "absolute",
-            },
-          }}
-        >
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              top: y,
-              left: x,
-              backgroundColor: "#aeaeae",
-              padding: 20,
-              borderRadius: 10,
-            }}
-            draggable
-          >
-            <h3>{value}</h3>
-          </div>
-        </Html>
-      ))}
+      {measureValues.map(
+        ({ show, value, position: { x, y } }, i) =>
+          show && (
+            <Html
+              divProps={{
+                style: {
+                  position: "absolute",
+                },
+              }}
+            >
+              <div
+                key={i}
+                style={{
+                  position: "absolute",
+                  top: y,
+                  left: x,
+                  backgroundColor: "#aeaeae",
+                  padding: 20,
+                  borderRadius: 10,
+                }}
+                draggable
+              >
+                <h3>{value}</h3>
+              </div>
+            </Html>
+          )
+      )}
     </>
   );
 };

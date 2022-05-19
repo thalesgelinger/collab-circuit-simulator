@@ -33,7 +33,9 @@ import {
 import { RootState } from "../../services/redux/store";
 import {
   addCircuit,
+  run,
   SimulationState,
+  stop,
   updateCircuit,
   updateIntersection,
 } from "../../services/redux/simulationSlice";
@@ -114,8 +116,10 @@ export const Workspace = () => {
     if (!!simulation) {
       if (isSimulationRunning.isRunning) {
         simulation.run();
+        dispatch(run());
       } else {
         simulation.stop();
+        dispatch(stop());
       }
     }
   }, [isSimulationRunning]);
