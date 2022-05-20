@@ -103,11 +103,9 @@ export const Workspace = () => {
     [circuit]
   );
 
-  // const {
-  //   user: { uid: userId },
-  // } = useAuth();
-
-  const userId = "batata";
+  const {
+    user: { uid: userId },
+  } = useAuth();
 
   const location = useLocation();
 
