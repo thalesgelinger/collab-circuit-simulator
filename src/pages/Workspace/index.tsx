@@ -11,7 +11,7 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { Vector2d } from "konva/lib/types";
 import { ComponentType } from "../../@types";
 import { ActionsToolbar } from "../../components";
-import { ComponentsToolbar, DraggableComponentType } from "./ComponentsToolbar";
+import { DraggableComponentType } from "./ComponentsToolbar";
 import styles from "./styles.module.scss";
 import { Grid } from "./Grid";
 import { useSnapToGrid } from "../../hooks";
@@ -20,9 +20,8 @@ import { Circuit } from "./Circuit";
 import { Oscilloscope } from "./Oscilloscope";
 import { useAuth } from "../../hooks/useAuth";
 import { app } from "../../services/firebase";
-import { getDatabase, onValue, ref, set, on, get } from "firebase/database";
+import { getDatabase, onValue, ref, set, get } from "firebase/database";
 import { ComponentsKeys, Position } from "../../@types/ComponentType";
-import { Tools } from "./Tools";
 import { Toolbar } from "./Toolbar";
 import {
   Provider,
@@ -58,6 +57,7 @@ type ActionsType = {
 interface SnapshotType extends SimulationState {
   editedBy: string;
   isRunningSimulation: boolean;
+  nodes: any;
 }
 
 export const compareObjects = (obj1: object, obj2: object) => {
@@ -87,14 +87,14 @@ export const Workspace = () => {
 
   const [intersections, setIntersections] = useState<Position[]>([]);
 
-  const [circuitCover, setCircuitCover] = useState(null);
+  const [circuitCover, setCircuitCover] = useState("");
 
   const [isSimulationRunning, setIsSimulationRunning] = useState({
     isRunning: false,
     userId: "",
   });
 
-  const toolbarRef = useRef();
+  const toolbarRef = useRef<ElementRef<typeof Toolbar>>();
 
   const stageRef = useRef<ElementRef<typeof Stage>>(null);
 
@@ -187,6 +187,13 @@ export const Workspace = () => {
   };
 
   useEffect(() => {
+    console.log(
+      circuit.map(({ name, nodes }) => {
+        return `${name} - ${Object.keys(nodes).map(
+          (key) => `${key} - ${nodes[key].value}`
+        )}`;
+      })
+    );
     (async () => {
       dispatch(updateCircuit(circuit));
       if (!!state.simulation) {
@@ -231,16 +238,16 @@ export const Workspace = () => {
       }
 
       if (action === "print") {
-        toolbarRef.current.hide();
+        toolbarRef.current!.hide();
         window.print();
-        toolbarRef.current.show();
+        toolbarRef.current!.show();
       }
 
       if (action === "goback") {
-        toolbarRef.current.hide();
+        toolbarRef.current!.hide();
         const img = stageRef.current?.toDataURL();
-        toolbarRef.current.show();
-        setCircuitCover(img);
+        toolbarRef.current!.show();
+        setCircuitCover(img!);
       }
     })();
   }, [action]);
@@ -253,7 +260,7 @@ export const Workspace = () => {
 
       const isWiresDifferent = !compareObjects(
         response?.wires,
-        wireRef?.current?.wires
+        wireRef!.current?.wires ?? []
       );
       const shouldUpdateWires = !!response?.wires?.length && isWiresDifferent;
 
@@ -267,7 +274,7 @@ export const Workspace = () => {
 
       const isCooworkerWiresDifferent = !compareObjects(
         response?.cooworkerWires,
-        wireRef.current?.cooworkerWires
+        wireRef.current?.cooworkerWires ?? []
       );
 
       const shouldUpdateCooworkerWires =
@@ -444,39 +451,257 @@ export const Workspace = () => {
   };
 
   const edit = (evt: KonvaEventObject<MouseEvent>) => {
-    const { wire, wires, setWire, setWires, points } = wireRef.current!;
+    const { wire, wires, setWire, setWires } = wireRef.current!;
 
     if (!hasClickedToComponentTerminal(evt)) {
       console.log("NAO CONECTOU NO COMPONENTE");
     }
 
-    if (!wire?.from) {
-      createWire(evt);
-      console.log("AQUIIIIIIIIIIIIIIIIII");
+    const { x, y } = getPointerPositionByEvent(evt);
+    const clickedPosition = snapPosition(x, y);
+    let [component, terminal] = clickedComponent(clickedPosition);
 
+    let wireConnected = clickedWire(clickedPosition);
+
+    const hasComponent = !!component && !!terminal;
+
+    const componentHasValueNode =
+      !!component?.nodes[terminal! as keyof typeof component.nodes]?.value;
+
+    const componentNodeValue =
+      hasComponent && !!componentHasValueNode
+        ? component.nodes[terminal! as keyof typeof component.nodes].value
+        : "";
+
+    const nodeValue = !!componentNodeValue
+      ? componentNodeValue
+      : !!wireConnected
+      ? wireConnected.nodeValue
+      : nodes.toString();
+
+    console.log({ component, terminal, wireConnected });
+
+    if (!wire.from) {
+      setWire({
+        from: clickedPosition,
+        nodeValue,
+      } as Wire);
+
+      if (hasComponent && !componentHasValueNode) {
+        setCircuit((circuit) => {
+          const circuitCopy = [...circuit];
+          const indexOfComponent = circuit.findIndex(
+            ({ id }) => component.id === id
+          );
+          circuitCopy[indexOfComponent] = {
+            ...component,
+            nodes: {
+              ...component.nodes,
+              [terminal]: {
+                ...component.nodes[terminal as keyof typeof component.nodes],
+                value: nodeValue,
+              },
+            },
+          };
+          return circuitCopy;
+        });
+      }
+
+      if (!!wireConnected) {
+        setIntersections([...intersections, clickedPosition]);
+      }
       return;
     }
 
-    if (wireHasConnectedToComponent(wire)) {
-      console.log("DONE");
-      setWireNodeToEndComponent(wire);
-      console.log("SETRTING WIRE AFTER NODE CONNECTED");
-      setWires([...wires, points]);
+    if (!!wireConnected) {
+      setIntersections([...intersections, clickedPosition]);
+
+      [component, terminal] = clickedComponent(wire.from);
+
+      const hasNodeValueOnCLickedComponent =
+        !!nodeValue && Number(wire.nodeValue) > Number(nodeValue);
+
+      const nodeValueToConsider = hasNodeValueOnCLickedComponent
+        ? nodeValue
+        : wire.nodeValue;
+
+      console.log("CONECTOU EM UM FIO:", {
+        nodeValueToConsider,
+        hasNodeValueOnCLickedComponent,
+        component,
+      });
+
+      if (!component) {
+        setWires((wiresOriginal) => {
+          const wires = [...wiresOriginal];
+          const wireConnectedIndex = wires.findIndex(
+            (w) => w.nodeValue === wire.nodeValue
+          );
+
+          wires[wireConnectedIndex] = {
+            ...wires[wireConnectedIndex],
+            nodeValue: nodeValueToConsider,
+          };
+
+          wires.push({
+            ...wire,
+            to: clickedPosition,
+            nodeValue: nodeValueToConsider,
+          });
+
+          return wires;
+        });
+      } else {
+        setWires([...wires, { ...wire, to: clickedPosition }]);
+        setCircuit((circuit) => {
+          const circuitCopy = [...circuit];
+          const indexOfComponent = circuit.findIndex(
+            ({ id }) => component.id === id
+          );
+          circuitCopy[indexOfComponent] = {
+            ...component,
+            nodes: {
+              ...component.nodes,
+              [terminal]: {
+                ...component.nodes[terminal as keyof typeof component.nodes],
+                value: nodeValueToConsider,
+              },
+            },
+          };
+          return circuitCopy;
+        });
+      }
       setWire({} as Wire);
       return;
     }
 
-    if (wireConnectedToOtherWire(wire.to)) {
-      console.log("É UMA JUNÇÃO");
-      connectNodeToComponent(wire);
-      setIntersections([...intersections, wire.to]);
-      setWires([...wires, points]);
+    if (!!component && !!terminal) {
+      const hasNodeValueOnCLickedComponent =
+        !!nodeValue && Number(wire.nodeValue) > Number(nodeValue);
+
+      let nodeValueToConsider = hasNodeValueOnCLickedComponent
+        ? nodeValue
+        : wire.nodeValue;
+
+      console.log("CONECTOU EM UM COMPONENTE: ", {
+        nodeValue,
+        nodeValueToConsider,
+        wireNodeValue: wire.nodeValue,
+      });
+
+      setWires((wiresOriginal) => {
+        const wires = [...wiresOriginal];
+        const wireConnectedIndex = wires.findIndex(
+          (w) => w.nodeValue === wire.nodeValue
+        );
+
+        wires[wireConnectedIndex] = {
+          ...wires[wireConnectedIndex],
+          nodeValue: nodeValueToConsider,
+        };
+
+        wires.push({
+          ...wire,
+          to: clickedPosition,
+          nodeValue: nodeValueToConsider,
+        });
+
+        return wires;
+      });
+
+      // if (nodeValueToConsider !== wire.nodeValue) {
+      //   console.log("VAI ATUALIZAR O OUTRO");
+      //   [component, terminal] = clickedComponent(wire.from);
+      //   if (!component) {
+      //     [component, terminal] = clickedComponent(wire.to);
+      //   }
+      // }
+
+      // if (!component) {
+      //   return;
+      // }
+
+      if (nodeValueToConsider !== clickedWire(wire.from)?.nodeValue) {
+        if (nodeValueToConsider !== wire.nodeValue) {
+          console.log("VAI ATUALIZAR O OUTRO");
+          [component, terminal] = clickedComponent(wire.from);
+          if (!component) {
+            [component, terminal] = clickedComponent(wire.to);
+          }
+        }
+      }
+
+      setCircuit((circuit) => {
+        const circuitCopy = [...circuit];
+        const indexOfComponent = circuit.findIndex(
+          ({ id }) => component.id === id
+        );
+        circuitCopy[indexOfComponent] = {
+          ...component,
+          nodes: {
+            ...component.nodes,
+            [terminal]: {
+              ...component.nodes[terminal as keyof typeof component.nodes],
+              value: nodeValueToConsider,
+            },
+          },
+        };
+        return circuitCopy;
+      });
       setWire({} as Wire);
+      setNodes(wire.nodeValue === nodes.toString() ? nodes + 1 : nodes);
       return;
     }
 
-    setWires([...wires, points]);
-    setWire({ from: wire.to } as Wire);
+    setWires([...wires, { ...wire, to: clickedPosition }]);
+    setWire({ from: clickedPosition, nodeValue: wire.nodeValue } as Wire);
+  };
+
+  const clickedComponent = (clickedPosition: Position) => {
+    const componentClicked = circuit.find((component) => {
+      return Object.keys(component.nodes).some((nodeKey) => {
+        return compareObjects(
+          component.nodes[nodeKey as keyof typeof component.nodes].position,
+          clickedPosition
+        );
+      });
+    });
+
+    if (!componentClicked) {
+      return [undefined, undefined];
+    }
+
+    const terminal = Object.keys(componentClicked.nodes).find((nodeKey) => {
+      return compareObjects(
+        componentClicked.nodes[nodeKey as keyof typeof componentClicked.nodes]
+          .position,
+        clickedPosition
+      );
+    })!;
+
+    return [componentClicked, terminal] as const;
+  };
+
+  const clickedWire = ({ x, y }: Position) => {
+    const wireClicked = wireRef?.current?.wires.find((wire) => {
+      const yValues = [wire.from.y, wire.to.y];
+      const yMin = Math.min(...yValues);
+      const yMax = Math.max(...yValues);
+      const matchXHorizontal = wire.from.x === x && x === wire.to.x;
+      const matchYHorizontal = yMin <= y && y <= yMax;
+
+      const xValues = [wire.from.x, wire.to.x];
+      const xMin = Math.min(...xValues);
+      const xMax = Math.max(...xValues);
+      const matchXVertical = xMin <= x && x <= xMax;
+      const matchYVertical = wire.from.y === y && y === wire.from.y;
+
+      const matchVertical = matchYVertical && matchXVertical;
+      const matchHorizontal = matchYHorizontal && matchXHorizontal;
+      return matchHorizontal || matchVertical;
+    });
+
+    return wireClicked;
   };
 
   const hasClickedToComponentTerminal = (evt: KonvaEventObject<MouseEvent>) => {
@@ -495,37 +720,6 @@ export const Workspace = () => {
     });
 
     return hasConnected;
-  };
-
-  const connectNodeToComponent = (wire: Wire) => {
-    console.log("connectNodeToComponent");
-    const [componentEnd, terminalEnd] = findNodeOnPrevWire(wire.to);
-    console.log({ componentEnd, terminalEnd });
-    const [component, terminal] = findNodeOnPrevWire(wire.from);
-    console.log({ component, terminal });
-
-    const newComponent = {
-      component: component!,
-      terminal: terminal!,
-      node: componentEnd!.nodes[terminalEnd!].value,
-    };
-
-    console.log({ newComponent });
-    updateComponentTerminalNode(newComponent);
-  };
-
-  const findNodeOnPrevWire = (
-    wirePosition: Position
-  ): readonly [ComponentType, "positive" | "negative"] => {
-    console.log("findNodeOnPrevWire");
-    const [component, terminal] =
-      findComponentAndTerminalConnectedByWire(wirePosition)!;
-    console.log("findNodeOnPrevWire:", { component, terminal });
-    if (!component && !terminal) {
-      const position = findInPrevWires(wirePosition, true);
-      return findNodeOnPrevWire(position);
-    }
-    return [component!, terminal!] as const;
   };
 
   const rotate = (component: ComponentType) => {
@@ -644,55 +838,6 @@ export const Workspace = () => {
     setCircuit(circuitWithComponentRemoved);
   };
 
-  const createWire = (evt: KonvaEventObject<MouseEvent>) => {
-    const { x, y } = getPointerPositionByEvent(evt);
-    const from = snapPosition(x, y);
-    const newWire = { from } as Wire;
-
-    const { setWire } = wireRef.current!;
-
-    setWire(newWire);
-
-    const component = findComponentByWirePosition(from);
-
-    if (wireConnectedToOtherWire(from)) {
-      setIntersections([...intersections, from]);
-      return;
-    }
-
-    if (!component) {
-      return;
-    }
-
-    setWireNodeToComponent(from, component);
-  };
-
-  const setWireNodeToComponent = (
-    wirePoint: Position,
-    component: ComponentType
-  ) => {
-    const terminal = findTerminalConnectedToWire(component, wirePoint);
-
-    if (!terminal) {
-      return;
-    }
-
-    if (!!component?.nodes?.[terminal]?.value) {
-      return;
-    }
-
-    console.log({ component, terminal, node: nodes.toString() });
-
-    console.log("setWireNodeToComponent:");
-    updateComponentTerminalNode({
-      component,
-      terminal,
-      node: nodes.toString(),
-    });
-
-    setNodes(nodes + 1);
-  };
-
   const findTerminalConnectedToWire = (
     { nodes: { negative, positive } }: ComponentType,
     { x, y }: Position
@@ -741,86 +886,6 @@ export const Workspace = () => {
     });
   };
 
-  const setWireNodeToEndComponent = (wire: Wire) => {
-    const [endComponent, endTerminalConnected] =
-      findComponentAndTerminalConnectedByWire(wire.to);
-
-    if (!endTerminalConnected) {
-      return;
-    }
-
-    const [initialComponent, initialTerminalConnected] =
-      findComponentAndTerminalConnectedByWire(wire.from);
-
-    console.log({ initialComponent, initialTerminalConnected });
-
-    if (!initialComponent && !initialTerminalConnected) {
-      const from = findInPrevWires(wire.from);
-      setWireNodeToEndComponent({
-        ...wire,
-        from,
-      });
-    }
-
-    const hasTerminal = !!endComponent?.nodes?.[endTerminalConnected]?.value;
-
-    if (!initialComponent) {
-      return;
-    }
-
-    console.log({ initialComponent, initialTerminalConnected });
-
-    if (!hasTerminal) {
-      console.log("CONECTOU NO END");
-      updateComponentTerminalNode({
-        component: endComponent!,
-        terminal: endTerminalConnected!,
-        node: initialComponent!.nodes[initialTerminalConnected!].value,
-      });
-      return;
-    } else {
-      console.log("CONECTOU NO START");
-      updateComponentTerminalNode({
-        component: initialComponent!,
-        terminal: initialTerminalConnected!,
-        node: endComponent!.nodes[initialTerminalConnected!].value,
-      });
-      setNodes(nodes - 1);
-      return;
-    }
-  };
-
-  const findInPrevWires = (wirePosition: Position, isBetween = false) => {
-    const wires = mappedWirePointsArray();
-
-    const findFunction = isBetween
-      ? isPointBetweenWires(wirePosition)
-      : isCurrentWirePosition(wirePosition);
-
-    const currentWireIndex = wires?.findIndex((line) => {
-      return line.some(findFunction);
-    });
-
-    console.log("INDICE DO SEGUNDO ARRAY");
-    const currentWirePointIndex =
-      wires[currentWireIndex]?.findIndex(findFunction);
-
-    console.log({
-      currentWireIndex,
-      wires,
-      wirePosition,
-      currentWirePointIndex,
-    });
-
-    const prevIndex =
-      currentWirePointIndex <= 0 ? 0 : currentWirePointIndex - 1;
-
-    return {
-      x: wires[currentWireIndex][prevIndex].x,
-      y: wires[currentWireIndex][prevIndex].y,
-    };
-  };
-
   const findComponentAndTerminalConnectedByWire = (wirePosition: Position) => {
     const component = findComponentByWirePosition(wirePosition);
     if (!component) {
@@ -829,63 +894,6 @@ export const Workspace = () => {
     const terminal = findTerminalConnectedToWire(component, wirePosition)!;
     return [component, terminal] as const;
   };
-
-  const wireHasConnectedToComponent = (wire: Wire) => {
-    const hasConnected = circuit.some((component) => {
-      const connectedToPositive =
-        JSON.stringify(component.nodes.positive.position) ===
-        JSON.stringify(wire.to);
-      const connectedToNegative =
-        JSON.stringify(component.nodes.negative.position) ===
-        JSON.stringify(wire.to);
-
-      return connectedToNegative || connectedToPositive;
-    });
-    return hasConnected;
-  };
-
-  const wireConnectedToOtherWire = ({ x, y }: Position) => {
-    console.log("ENTROU  PRA VERIFICAR");
-    const isWireConnectedToOtherWire = mappedWirePointsArray()!.some((line) => {
-      return line.some(isPointBetweenWires({ x, y }));
-    });
-
-    return isWireConnectedToOtherWire;
-  };
-
-  const isCurrentWirePosition =
-    (wirePosition: Position) => (point: Position) => {
-      return compareObjects(point, wirePosition);
-    };
-
-  const isPointBetweenWires =
-    ({ x, y }: Position) =>
-    (prevPoint: Position, index: number, line: Position[]) => {
-      const nextPoint = line[index + 1];
-      const isConnectedOnX = prevPoint?.x >= x && x >= nextPoint?.x;
-      const isConnectedOnY = prevPoint?.y >= y && y >= nextPoint?.y;
-      const isConnected = isConnectedOnX && isConnectedOnY;
-      console.log("OrdenNomal:", index, { isConnectedOnX, isConnectedOnY });
-      if (!isConnected) {
-        const isConnectedOnX = prevPoint?.x <= x && x <= nextPoint?.x;
-        const isConnectedOnY = prevPoint?.y <= y && y <= nextPoint?.y;
-        console.log("OrdenInversa", index, { isConnectedOnX, isConnectedOnY });
-        return isConnectedOnX && isConnectedOnY;
-      }
-      return isConnected;
-    };
-
-  const mappedWirePointsArray = () =>
-    wireRef.current?.wires.map((line) => {
-      let lineMappedToPosition = [];
-      for (let i = 0; i < line.length; i += 2) {
-        lineMappedToPosition.push({
-          x: line[i],
-          y: line[i + 1],
-        });
-      }
-      return lineMappedToPosition;
-    });
 
   const handleStageMouseMove = (evt: KonvaEventObject<MouseEvent>) => {
     if (!wireRef.current?.wire?.from) {

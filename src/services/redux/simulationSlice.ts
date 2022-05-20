@@ -7,7 +7,7 @@ import { ActionTypes } from "../../components/ActionsToolbar";
 export interface SimulationState {
   simulation: Simulation;
   circuit: CircuitType;
-  wires: number[][];
+  wires: Wire[];
   cooworkerWires: CooworkerWire[];
   intersections: Position[];
   oscilloscopeData: { time: string; [key: string]: string }[];
