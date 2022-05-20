@@ -98,6 +98,11 @@ export const Workspace = () => {
 
   const stageRef = useRef<ElementRef<typeof Stage>>(null);
 
+  const ids = useMemo(
+    () => (!!circuit.length ? circuit.map(({ id }) => id) : [0]),
+    [circuit]
+  );
+
   // const {
   //   user: { uid: userId },
   // } = useAuth();
@@ -320,7 +325,9 @@ export const Workspace = () => {
 
   const handleDragMove = useCallback(
     (e: KonvaEventObject<DragEvent>, component = {} as ComponentType) => {
-      const componentId = component?.id ?? circuit.length;
+      const latestId = Math.max(...ids);
+      console.log({ latestId });
+      const componentId = component?.id ?? latestId;
 
       e.currentTarget.moveToTop();
 
@@ -359,7 +366,7 @@ export const Workspace = () => {
         x: event.target.x(),
         y: event.target.y(),
       },
-      id: circuit.length + 1,
+      id: Math.max(...ids) + 1,
       image: event.image,
       componentType: event.componentType,
       value: event.value,
@@ -905,10 +912,7 @@ export const Workspace = () => {
   };
 
   const removeComponent = ({ id }: ComponentType) => {
-    const circuitWithComponentRemoved = circuit.filter(
-      (component) => component.id !== id
-    );
-    setCircuit(circuitWithComponentRemoved);
+    setCircuit((circuit) => circuit.filter((component) => component.id !== id));
   };
 
   const findTerminalConnectedToWire = (
@@ -959,15 +963,6 @@ export const Workspace = () => {
     });
   };
 
-  const findComponentAndTerminalConnectedByWire = (wirePosition: Position) => {
-    const component = findComponentByWirePosition(wirePosition);
-    if (!component) {
-      return [undefined, undefined];
-    }
-    const terminal = findTerminalConnectedToWire(component, wirePosition)!;
-    return [component, terminal] as const;
-  };
-
   const handleStageMouseMove = (evt: KonvaEventObject<MouseEvent>) => {
     if (!wireRef.current?.wire?.from) {
       return;
@@ -981,25 +976,6 @@ export const Workspace = () => {
     const stage = evt.target.getStage();
     const position = stage?.getPointerPosition() as Vector2d;
     return position;
-  };
-
-  const findComponentByWirePosition = (wirePosition: Position) => {
-    const component = circuit.find((component) => {
-      console.log("component inside the finder", { component, wirePosition });
-
-      const connectedToPositive = compareObjects(
-        component.nodes.positive.position,
-        wirePosition
-      );
-      const connectedToNegative = compareObjects(
-        component.nodes.negative.position,
-        wirePosition
-      );
-      console.log({ connectedToNegative, connectedToPositive });
-      return connectedToNegative || connectedToPositive;
-    });
-    console.log("findComponentByWirePosition:", { component });
-    return component;
   };
 
   const handleComponentClick = (component: ComponentType) => {

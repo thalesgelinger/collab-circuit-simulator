@@ -20,6 +20,7 @@ import { updateOscilloscopeData } from "../../services/redux/simulationSlice";
 import { AcComponentForm } from "./AcComponentForm";
 import { formatToSi } from "../../utils/formatToSI";
 import { pointerShape } from "../../utils/pointerShape";
+import { ActionTypes } from "../ActionsToolbar";
 
 interface DraggableComponentProps {
   size: number;
@@ -340,7 +341,13 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
         },
       },
     };
-  }, []);
+  }, [componentData]);
+
+  const pointers = {
+    edit: "default",
+    "": "grab",
+    remove: "url(/assets/remove-cursor.png) 0 25, auto",
+  } as { [key in ActionTypes]: string };
 
   return (
     <>
@@ -375,7 +382,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
           return (
             node.value === "" && (
               <Circle
-                key={`${componentData.id}_node`}
+                key={`${componentData.id}_${nodeKey}`}
                 radius={3}
                 fill="white"
                 stroke="black"
@@ -406,9 +413,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
         onDblClick={handleDoubleClick}
         onClick={onComponentClick}
         onMouseEnter={(e) => {
-          pointerShape(
-            isTool ? "pointer" : action === "edit" ? "default" : "grab"
-          )(e);
+          pointerShape(isTool ? "pointer" : pointers[action])(e);
           setShowLabelType(true);
         }}
         onMouseDown={pointerShape(
