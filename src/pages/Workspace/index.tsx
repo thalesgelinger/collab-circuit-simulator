@@ -1016,7 +1016,7 @@ export const Workspace = () => {
     }
   };
 
-  const handleWireClick = (wireIndex: number) => {
+  const handleWireClick = (wire: Wire) => {
     const actions = {
       remove,
     } as {
@@ -1024,143 +1024,82 @@ export const Workspace = () => {
     };
 
     if (!!actions?.[action]) {
-      actions[action](wireIndex);
+      actions[action](wire);
     }
   };
 
-  const remove = (elementClicked: ComponentType | number) => {
+  const remove = (elementClicked: ComponentType | Wire) => {
     if ((elementClicked as ComponentType)?.componentType) {
       removeComponent(elementClicked as ComponentType);
     }
-    if (typeof elementClicked === "number") {
+    if ((elementClicked as Wire)?.nodeValue) {
       removeWire(elementClicked);
     }
   };
 
-  const removeWire = (wireIndex: number) => {
-    const { wires } = wireRef.current!;
+  const removeWire = (wire: Wire) => {
+    const { setWires, wires } = wireRef.current!;
 
-    const wiresIndexToRemove = findAllWiresToRemove(wireIndex);
+    setIntersections((intersections) =>
+      intersections.filter((intersection) => {
+        return !wires.some((w) => {
+          const { nodeValue, ...position } = w;
 
-    const wiresToRemove = wiresIndexToRemove.map((i) => wires[i]).flat();
+          const isConnectionAtFrom = compareObjects(
+            position.from,
+            intersection
+          );
+          const isConnectionAtto = compareObjects(position.to, intersection);
 
-    const [start, end] = findStartAndEndPoint(wiresToRemove);
+          console.log({
+            isConnectionAtFrom,
+            isConnectionAtto,
+            position,
+            intersection,
+          });
 
-    const [componentAtStart, terminalAtStart] =
-      findComponentAndTerminalConnectedByWire(start);
-
-    const [componentAtEnd, terminalAtEnd] =
-      findComponentAndTerminalConnectedByWire(end);
-
-    const isOnWire = (intersection: Position) => {
-      return wiresToRemove.some((x, i) => {
-        const y = wiresToRemove[i + 1];
-        const hasX = x === intersection.x;
-        const hasY = y === intersection.y;
-        console.log({ x, y, intersection });
-        return hasX && hasY;
-      });
-    };
-
-    const wiresHasIntersection = intersections.some(isOnWire);
-
-    console.log({ wiresHasIntersection, wiresToRemove, intersections });
-
-    if (wiresHasIntersection) {
-      setIntersections((intersections) => {
-        return intersections.filter((intersection) => !isOnWire(intersection));
-      });
-    }
-
-    wireRef.current?.setWires((wires) =>
-      wires.filter((_, i) => !wiresIndexToRemove.includes(i))
+          return isConnectionAtFrom || isConnectionAtto;
+        });
+      })
     );
+    setWires((wires) => wires.filter((w) => w.nodeValue !== wire.nodeValue));
 
-    if (componentAtStart && terminalAtStart) {
-      updateComponentTerminalNode({
-        component: componentAtStart,
-        terminal: terminalAtStart!,
-        node: componentAtStart.nodes[terminalAtStart].value === "0" ? "0" : "",
+    setCircuit((circuit) => {
+      const circuitCopy = [...circuit];
+
+      return circuitCopy.map((component) => {
+        if (
+          Object.keys(component.nodes).some(
+            (key) =>
+              component.nodes[key as keyof typeof component.nodes].value ===
+              wire.nodeValue
+          )
+        ) {
+          const terminal = Object.keys(component.nodes).find((key) => {
+            return (
+              component.nodes[key as keyof typeof component.nodes].value ===
+              wire.nodeValue
+            );
+          })!;
+
+          return {
+            ...component,
+            nodes: {
+              ...component.nodes,
+              [terminal]: {
+                ...component.nodes[terminal as keyof typeof component.nodes],
+                value:
+                  component.nodes[terminal as keyof typeof component.nodes]
+                    .value === "0"
+                    ? "0"
+                    : "",
+              },
+            },
+          };
+        }
+        return component;
       });
-    }
-
-    if (componentAtEnd && terminalAtEnd) {
-      updateComponentTerminalNode({
-        component: componentAtEnd,
-        terminal: terminalAtEnd!,
-        node: componentAtEnd.nodes[terminalAtEnd].value === "0" ? "0" : "",
-      });
-    }
-  };
-
-  const findAllWiresToRemove = (wireIndex: number) => {
-    const { wires } = wireRef.current!;
-
-    const wiresToRemove = [wireIndex];
-
-    const [startPointOriginal, endPointOriginal] = findStartAndEndPoint(
-      wires[wireIndex]
-    );
-
-    const prevWires = findPrevWires(startPointOriginal);
-    const nextWires = findNextWires(endPointOriginal);
-
-    wiresToRemove.unshift(...prevWires);
-    wiresToRemove.push(...nextWires);
-
-    return wiresToRemove;
-  };
-
-  const findStartAndEndPoint = (wire: number[]) => {
-    const start = {
-      x: wire[0],
-      y: wire[1],
-    };
-
-    const end = {
-      x: wire[wire!.length - 2],
-      y: wire[wire!.length - 1],
-    };
-
-    return [start, end];
-  };
-  const findPrevWires = (
-    startPoint: Position,
-    prevWiresIndex = [] as number[]
-  ): number[] => {
-    const { wires } = wireRef.current!;
-
-    const indexWirePrev = wires.findIndex((wire) => {
-      const [_, end] = findStartAndEndPoint(wire);
-
-      return compareObjects(end, startPoint);
     });
-
-    if (indexWirePrev >= 0) {
-      prevWiresIndex.unshift(indexWirePrev);
-      const [start] = findStartAndEndPoint(wires[indexWirePrev]);
-      return findPrevWires(start, prevWiresIndex);
-    }
-    return prevWiresIndex;
-  };
-
-  const findNextWires = (
-    endPoint: Position,
-    nextWiresIndex = [] as number[]
-  ) => {
-    const { wires } = wireRef.current!;
-
-    const indexWireNext = wires.findIndex((wire) => {
-      const [start, _] = findStartAndEndPoint(wire);
-
-      return compareObjects(start, endPoint);
-    });
-    if (indexWireNext >= 0) {
-      nextWiresIndex.push(indexWireNext);
-      const [start] = findStartAndEndPoint(wires[indexWireNext]);
-      return findPrevWires(start, nextWiresIndex);
-    }
-    return nextWiresIndex;
   };
 
   return (

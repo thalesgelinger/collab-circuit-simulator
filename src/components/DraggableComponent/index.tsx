@@ -68,8 +68,6 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
   const [image] = useImage(componentData!.image);
 
-  const [component, setComponent] = useState(componentData);
-
   const dispatch = useDispatch();
 
   const { simulation, circuit, isRunning, action } = useSelector(
@@ -176,6 +174,14 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
   const getValuesOfConnectedSources = async () => {
     if (componentData!.componentType === "osciloscope") {
+      setMeasureValues([
+        ...measureValues,
+        {
+          key: componentData!.id,
+          position: componentData!.position,
+          value: "Click no osciloscópio",
+        },
+      ]);
       return;
     }
 
@@ -199,7 +205,6 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
   };
 
   const submitNewLabel = (component: ComponentType) => {
-    setComponent(component);
     const circuitCopy = Array.from(circuit);
     const componentIndex = circuit.findIndex(({ id }) => {
       return id === component.id;

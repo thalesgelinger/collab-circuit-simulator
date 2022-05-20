@@ -41,7 +41,7 @@ interface WiresProps {
   circuitId: string;
   simulation: SimulationState;
   lastEdited: any;
-  onClickWire(index: number): void;
+  onClickWire(wire: Wire): void;
 }
 
 interface WiresHandle {
@@ -204,7 +204,7 @@ export const Wires = forwardRef<WiresHandle, WiresProps>(
               fill="#000"
               strokeWidth={3}
               onClick={() => {
-                onClickWire(index);
+                onClickWire(wire);
               }}
               onMouseOver={pointerShape(action === "edit" ? "copy" : "default")}
               onMouseLeave={pointerShape("default")}
