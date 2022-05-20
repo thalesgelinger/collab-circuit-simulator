@@ -175,6 +175,10 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
   }, [isRunning]);
 
   const getValuesOfConnectedSources = async () => {
+    if (componentData!.componentType === "osciloscope") {
+      return;
+    }
+
     if (tools.hasOwnProperty(componentData!.componentType)) {
       console.log({ circuit });
       await tools[componentData!.componentType]();
@@ -394,33 +398,34 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
       {editingLabel && getForm(componentData!.componentType)}
 
-      {measureValues.map(
-        ({ show, value, position: { x, y } }, i) =>
-          show && (
-            <Html
-              divProps={{
-                style: {
-                  position: "absolute",
-                },
-              }}
-            >
-              <div
-                key={i}
-                style={{
-                  position: "absolute",
-                  top: y,
-                  left: x,
-                  backgroundColor: "#aeaeae",
-                  padding: 20,
-                  borderRadius: 10,
+      {!!measureValues?.length &&
+        measureValues.map(
+          ({ show, value, position }, i) =>
+            show && (
+              <Html
+                divProps={{
+                  style: {
+                    position: "absolute",
+                  },
                 }}
-                draggable
               >
-                <h3>{value}</h3>
-              </div>
-            </Html>
-          )
-      )}
+                <div
+                  key={i}
+                  style={{
+                    position: "absolute",
+                    top: position?.y ?? 0,
+                    left: position?.x ?? 0,
+                    backgroundColor: "#aeaeae",
+                    padding: 20,
+                    borderRadius: 10,
+                  }}
+                  draggable
+                >
+                  <h3>{value}</h3>
+                </div>
+              </Html>
+            )
+        )}
     </>
   );
 };

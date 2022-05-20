@@ -98,11 +98,10 @@ export const Workspace = () => {
 
   const stageRef = useRef<ElementRef<typeof Stage>>(null);
 
-  // const {
-  //   user: { uid: userId },
-  // } = useAuth();
+  const {
+    user: { uid: userId },
+  } = useAuth();
 
-  const userId = "batata";
   const location = useLocation();
 
   const navigate = useNavigate();
