@@ -104,7 +104,7 @@ export const Tools = ({
       {draggableComponents.map((component, i) => (
         <DraggableComponent
           componentData={component}
-          key={i}
+          key={`tool_${i}`}
           size={itemSize}
           x={horizontalToolbarCenter + i + ITEM_SIZE * 2.5}
           y={toolbarDistanceFromTop + 37 + i * componentsYFactor}

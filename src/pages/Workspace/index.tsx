@@ -98,10 +98,11 @@ export const Workspace = () => {
 
   const stageRef = useRef<ElementRef<typeof Stage>>(null);
 
-  const {
-    user: { uid: userId },
-  } = useAuth();
+  // const {
+  //   user: { uid: userId },
+  // } = useAuth();
 
+  const userId = "batata";
   const location = useLocation();
 
   const navigate = useNavigate();
@@ -513,10 +514,66 @@ export const Workspace = () => {
       return;
     }
 
+    const findComponent = (position: Position) => {
+      const [component, terminal] = clickedComponent(position);
+
+      if (!component) {
+        const starterComponent = circuit.find((c) => {
+          return Object.keys(c.nodes).some((key) => {
+            return (
+              c.nodes[key as keyof typeof c.nodes].value === wire.nodeValue
+            );
+          });
+        });
+
+        const terminal = Object.keys(starterComponent!.nodes).find(
+          (nodeKey) => {
+            return (
+              starterComponent?.nodes[
+                nodeKey as keyof typeof starterComponent.nodes
+              ].value === wire.nodeValue
+            );
+          }
+        );
+
+        return [starterComponent, terminal];
+      }
+
+      return [component, terminal] as const;
+    };
+
+    const findComponents = (position: Position) => {
+      const [component, terminal] = clickedComponent(position);
+
+      if (!component) {
+        const starterComponents = circuit.filter((c) => {
+          return Object.keys(c.nodes).some((key) => {
+            return (
+              c.nodes[key as keyof typeof c.nodes].value === wire.nodeValue
+            );
+          });
+        });
+
+        const terminals = starterComponents.map((c) => {
+          Object.keys(c!.nodes).find((nodeKey) => {
+            return (
+              c?.nodes[nodeKey as keyof typeof c.nodes].value === wire.nodeValue
+            );
+          });
+        });
+
+        return [[starterComponents], [terminals]];
+      }
+
+      return [component, terminal] as const;
+    };
+
     if (!!wireConnected) {
       setIntersections([...intersections, clickedPosition]);
 
-      [component, terminal] = clickedComponent(wire.from);
+      console.log({ circuit, wire });
+
+      // [component, terminal] = findComponents(wire.from);
 
       const hasNodeValueOnCLickedComponent =
         !!nodeValue && Number(wire.nodeValue) > Number(nodeValue);
@@ -531,46 +588,75 @@ export const Workspace = () => {
         component,
       });
 
-      if (!component) {
-        setWires((wiresOriginal) => {
-          const wires = [...wiresOriginal];
-          const wireConnectedIndex = wires.findIndex(
-            (w) => w.nodeValue === wire.nodeValue
-          );
+      setWires((wiresOriginal) => {
+        const wires = [...wiresOriginal];
+        const wiresToChangeNodeValue = wires.filter(
+          (w) => w.nodeValue === wire.nodeValue
+        );
 
-          wires[wireConnectedIndex] = {
-            ...wires[wireConnectedIndex],
+        wiresToChangeNodeValue.forEach((w) => {
+          const indexOfWireToChange = wires.findIndex(
+            (e) => e.nodeValue === w.nodeValue
+          );
+          wires[indexOfWireToChange] = {
+            ...wires[indexOfWireToChange],
             nodeValue: nodeValueToConsider,
           };
+        });
 
-          wires.push({
-            ...wire,
-            to: clickedPosition,
-            nodeValue: nodeValueToConsider,
+        wires.push({
+          ...wire,
+          to: clickedPosition,
+          nodeValue: nodeValueToConsider,
+        });
+
+        return wires;
+      });
+
+      setCircuit((circuit) => {
+        const circuitCopy = [...circuit];
+
+        const valueNodeToConsiderHere = Math.max(
+          Number(wire.nodeValue),
+          Number(nodeValue)
+        );
+        const componentsToUpdate = circuit.filter((comp) => {
+          return Object.keys(comp.nodes).some((key) => {
+            console.log({ valueNodeToConsiderHere });
+
+            return comp.nodes[key].value === valueNodeToConsiderHere.toString();
+          });
+        });
+
+        console.log({ componentsToUpdate });
+
+        componentsToUpdate.forEach((comp) => {
+          const indexOfComponent = circuit.findIndex(
+            ({ id }) => id === comp.id
+          );
+
+          const terminal = Object.keys(comp!.nodes).find((nodeKey) => {
+            return (
+              comp?.nodes[nodeKey as keyof typeof comp.nodes].value ===
+              valueNodeToConsiderHere.toString()
+            );
           });
 
-          return wires;
-        });
-      } else {
-        setWires([...wires, { ...wire, to: clickedPosition }]);
-        setCircuit((circuit) => {
-          const circuitCopy = [...circuit];
-          const indexOfComponent = circuit.findIndex(
-            ({ id }) => component.id === id
-          );
           circuitCopy[indexOfComponent] = {
-            ...component,
+            ...comp,
             nodes: {
-              ...component.nodes,
+              ...comp.nodes,
               [terminal]: {
-                ...component.nodes[terminal as keyof typeof component.nodes],
+                ...comp.nodes[terminal as keyof typeof comp.nodes],
                 value: nodeValueToConsider,
               },
             },
           };
-          return circuitCopy;
         });
-      }
+
+        return circuitCopy;
+      });
+
       setWire({} as Wire);
       return;
     }
@@ -589,16 +675,25 @@ export const Workspace = () => {
         wireNodeValue: wire.nodeValue,
       });
 
+      if (nodeValue === nodeValueToConsider && nodeValue !== nodes.toString()) {
+        [component, terminal] = findComponent(wire.from);
+      }
+
       setWires((wiresOriginal) => {
         const wires = [...wiresOriginal];
-        const wireConnectedIndex = wires.findIndex(
+        const wiresToChangeNodeValue = wires.filter(
           (w) => w.nodeValue === wire.nodeValue
         );
 
-        wires[wireConnectedIndex] = {
-          ...wires[wireConnectedIndex],
-          nodeValue: nodeValueToConsider,
-        };
+        wiresToChangeNodeValue.forEach((w) => {
+          const indexOfWireToChange = wires.findIndex(
+            (e) => e.nodeValue === w.nodeValue
+          );
+          wires[indexOfWireToChange] = {
+            ...wires[indexOfWireToChange],
+            nodeValue: nodeValueToConsider,
+          };
+        });
 
         wires.push({
           ...wire,
@@ -608,28 +703,6 @@ export const Workspace = () => {
 
         return wires;
       });
-
-      // if (nodeValueToConsider !== wire.nodeValue) {
-      //   console.log("VAI ATUALIZAR O OUTRO");
-      //   [component, terminal] = clickedComponent(wire.from);
-      //   if (!component) {
-      //     [component, terminal] = clickedComponent(wire.to);
-      //   }
-      // }
-
-      // if (!component) {
-      //   return;
-      // }
-
-      if (nodeValueToConsider !== clickedWire(wire.from)?.nodeValue) {
-        if (nodeValueToConsider !== wire.nodeValue) {
-          console.log("VAI ATUALIZAR O OUTRO");
-          [component, terminal] = clickedComponent(wire.from);
-          if (!component) {
-            [component, terminal] = clickedComponent(wire.to);
-          }
-        }
-      }
 
       setCircuit((circuit) => {
         const circuitCopy = [...circuit];
@@ -677,7 +750,7 @@ export const Workspace = () => {
           .position,
         clickedPosition
       );
-    })!;
+    })! as keyof typeof componentClicked.nodes;
 
     return [componentClicked, terminal] as const;
   };
