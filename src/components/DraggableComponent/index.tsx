@@ -323,7 +323,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
       {!!componentData?.nodes &&
         Object.keys(componentData.nodes).map((nodeKey) => {
           const node = componentData!.nodes[nodeKey];
-
+          console.log({ node });
           return (
             node.value === "" && (
               <Circle

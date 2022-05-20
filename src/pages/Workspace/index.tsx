@@ -148,23 +148,29 @@ export const Workspace = () => {
   }, []);
 
   useEffect(() => {
-    (async () => {
-      if (action === "goback") {
-        const cooworkerWiresRef = ref(db, `circuits/${id}/cooworkerWires`);
-        const cooworkerWiresResponse = await get(cooworkerWiresRef);
-
-        const cooworkerWires = [...(cooworkerWiresResponse?.val() ?? [])];
-
-        const cooworkerWiresFiltered = cooworkerWires.filter(
-          (wire) => wire.id !== userId
-        );
-
-        await set(cooworkerWiresRef, cooworkerWiresFiltered);
-        await resetUsersCircuits();
-        navigate("/dashboard");
-      }
-    })();
+    if (action === "goback") {
+      navigate("/dashboard");
+    }
+    return () => {
+      unmountCircuit();
+    };
   }, [circuitCover]);
+
+  const unmountCircuit = async () => {
+    if (action === "goback") {
+      const cooworkerWiresRef = ref(db, `circuits/${id}/cooworkerWires`);
+      const cooworkerWiresResponse = await get(cooworkerWiresRef);
+
+      const cooworkerWires = [...(cooworkerWiresResponse?.val() ?? [])];
+
+      const cooworkerWiresFiltered = cooworkerWires.filter(
+        (wire) => wire.id !== userId
+      );
+
+      await set(cooworkerWiresRef, cooworkerWiresFiltered);
+      await resetUsersCircuits();
+    }
+  };
 
   const resetUsersCircuits = async () => {
     const userCircuitsRef = ref(db, `users/${userId}`);
@@ -1033,41 +1039,51 @@ export const Workspace = () => {
       removeComponent(elementClicked as ComponentType);
     }
     if ((elementClicked as Wire)?.nodeValue) {
-      removeWire(elementClicked);
+      removeWire(elementClicked as Wire);
     }
   };
 
   const removeWire = (wire: Wire) => {
     const { setWires, wires } = wireRef.current!;
 
-    setIntersections((intersections) =>
-      intersections.filter((intersection) => {
-        return !wires.some((w) => {
+    setIntersections((intersections) => {
+      const wiresToBeRemoved = wires.filter((w) => {
+        return w.nodeValue === wire.nodeValue;
+      });
+
+      return intersections.filter((intersection) => {
+        const isConnectedToWire = wiresToBeRemoved.some((w) => {
           const { nodeValue, ...position } = w;
 
           const isConnectionAtFrom = compareObjects(
             position.from,
             intersection
           );
-          const isConnectionAtto = compareObjects(position.to, intersection);
+          const isConnectionAtTo = compareObjects(position.to, intersection);
 
           console.log({
             isConnectionAtFrom,
-            isConnectionAtto,
+            isConnectionAtTo,
             position,
             intersection,
           });
 
-          return isConnectionAtFrom || isConnectionAtto;
+          return isConnectionAtFrom || isConnectionAtTo;
         });
+
+        return !isConnectedToWire;
+      });
+    });
+    setWires(
+      wires.filter((w) => {
+        return w.nodeValue !== wire.nodeValue;
       })
     );
-    setWires((wires) => wires.filter((w) => w.nodeValue !== wire.nodeValue));
 
     setCircuit((circuit) => {
       const circuitCopy = [...circuit];
 
-      return circuitCopy.map((component) => {
+      const circuitFiltered = circuitCopy.map((component) => {
         if (
           Object.keys(component.nodes).some(
             (key) =>
@@ -1090,7 +1106,8 @@ export const Workspace = () => {
                 ...component.nodes[terminal as keyof typeof component.nodes],
                 value:
                   component.nodes[terminal as keyof typeof component.nodes]
-                    .value === "0"
+                    .value === "0" &&
+                  component.componentType.endsWith("_source")
                     ? "0"
                     : "",
               },
@@ -1099,6 +1116,7 @@ export const Workspace = () => {
         }
         return component;
       });
+      return circuitFiltered;
     });
   };
 
