@@ -293,6 +293,55 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
   const isTool = Object.keys(tools).includes(componentData!.componentType);
 
+  const labelPositionBasedOnAngle = useMemo(() => {
+    if (!componentData?.position) {
+      return;
+    }
+
+    return {
+      0: {
+        label: {
+          x: componentData!.position.x,
+          y: componentData!.position.y - 26,
+        },
+        value: {
+          x: componentData!.position.x,
+          y: componentData!.position.y - 7,
+        },
+      },
+      90: {
+        label: {
+          x: componentData!.position.x,
+          y: componentData!.position.y + 16,
+        },
+        value: {
+          x: componentData!.position.x,
+          y: componentData!.position.y + 37,
+        },
+      },
+      180: {
+        label: {
+          x: componentData!.position.x - 40,
+          y: componentData!.position.y - 66,
+        },
+        value: {
+          x: componentData!.position.x - 40,
+          y: componentData!.position.y - 47,
+        },
+      },
+      270: {
+        label: {
+          x: componentData!.position.x + 40,
+          y: componentData!.position.y - 26,
+        },
+        value: {
+          x: componentData!.position.x + 40,
+          y: componentData!.position.y - 7,
+        },
+      },
+    };
+  }, []);
+
   return (
     <>
       {backToOrigin && (
@@ -323,10 +372,10 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
       {!!componentData?.nodes &&
         Object.keys(componentData.nodes).map((nodeKey) => {
           const node = componentData!.nodes[nodeKey];
-          console.log({ node });
           return (
             node.value === "" && (
               <Circle
+                key={`${componentData.id}_node`}
                 radius={3}
                 fill="white"
                 stroke="black"
@@ -376,8 +425,8 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
           <Text
             ref={textRef}
             text={componentData?.name}
-            x={x}
-            y={y - 21}
+            x={labelPositionBasedOnAngle?.[componentData.angle].label.x ?? 0}
+            y={labelPositionBasedOnAngle?.[componentData.angle].label.y ?? 0}
             fontSize={14}
             onDblClick={toggleEditingLabel}
             onMouseOver={pointerShape("text")}
@@ -390,8 +439,8 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
                 measureValues.find(({ key }) => componentData.id === key)
                   ?.value ?? componentData?.value
               }
-              x={x}
-              y={y - 7}
+              x={labelPositionBasedOnAngle?.[componentData.angle].value.x ?? 0}
+              y={labelPositionBasedOnAngle?.[componentData.angle].value.y ?? 0}
               fontSize={14}
               onDblClick={toggleEditingLabel}
               onMouseOver={pointerShape("text")}

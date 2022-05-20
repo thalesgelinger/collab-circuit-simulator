@@ -15,6 +15,7 @@ import { Line } from "react-konva";
 import { useDispatch, useSelector } from "react-redux";
 import { compareObjects } from "..";
 import { ComponentType } from "../../../@types";
+import { ActionTypes } from "../../../components/ActionsToolbar";
 import { app } from "../../../services/firebase";
 import {
   SimulationState,
@@ -192,6 +193,11 @@ export const Wires = forwardRef<WiresHandle, WiresProps>(
       return convertToPoints(wire);
     }, [wire]);
 
+    const possibleWireCursors = {
+      edit: "copy",
+      remove: "url(/assets/remove-cursor.png) 0 25, auto",
+    } as { [key in ActionTypes]: string };
+
     return (
       <>
         {wires.map((wire, index) => {
@@ -206,7 +212,9 @@ export const Wires = forwardRef<WiresHandle, WiresProps>(
               onClick={() => {
                 onClickWire(wire);
               }}
-              onMouseOver={pointerShape(action === "edit" ? "copy" : "default")}
+              onMouseOver={pointerShape(
+                possibleWireCursors?.[action] ?? "default"
+              )}
               onMouseLeave={pointerShape("default")}
             />
           );

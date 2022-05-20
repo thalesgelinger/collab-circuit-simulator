@@ -98,9 +98,11 @@ export const Workspace = () => {
 
   const stageRef = useRef<ElementRef<typeof Stage>>(null);
 
-  const {
-    user: { uid: userId },
-  } = useAuth();
+  // const {
+  //   user: { uid: userId },
+  // } = useAuth();
+
+  const userId = "batata";
 
   const location = useLocation();
 
@@ -193,13 +195,6 @@ export const Workspace = () => {
   };
 
   useEffect(() => {
-    console.log(
-      circuit.map(({ name, nodes }) => {
-        return `${name} - ${Object.keys(nodes).map(
-          (key) => `${key} - ${nodes[key].value}`
-        )}`;
-      })
-    );
     (async () => {
       dispatch(updateCircuit(circuit));
       if (!!state.simulation) {
@@ -1219,16 +1214,6 @@ export const Workspace = () => {
         }}
       >
         <button
-          onClick={() => setShowTools(true)}
-          style={{
-            backgroundColor: !showTools
-              ? "rgba(255, 255, 255, 0.1647)"
-              : "#efefef",
-          }}
-        >
-          FERRAMENTAS
-        </button>
-        <button
           onClick={() => setShowTools(false)}
           style={{
             backgroundColor: showTools
@@ -1237,6 +1222,16 @@ export const Workspace = () => {
           }}
         >
           COMPONENTES
+        </button>
+        <button
+          onClick={() => setShowTools(true)}
+          style={{
+            backgroundColor: !showTools
+              ? "rgba(255, 255, 255, 0.1647)"
+              : "#efefef",
+          }}
+        >
+          FERRAMENTAS
         </button>
       </div>
     </div>
