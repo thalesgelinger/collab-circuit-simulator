@@ -16,7 +16,7 @@ export class Simulation {
     };
 
     const removeComponentsNotConnected = ({ nodes }: ComponentType) => {
-      return Object.keys(nodes).some((nodeKey) => {
+      return Object.keys(nodes).every((nodeKey) => {
         return !!nodes[nodeKey as keyof typeof nodes].value;
       });
     };
