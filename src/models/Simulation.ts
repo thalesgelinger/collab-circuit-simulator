@@ -14,8 +14,17 @@ export class Simulation {
     const removeTools = ({ componentType }: ComponentType) => {
       return !["voltimeter", "osciloscope"].includes(componentType);
     };
+
+    const removeComponentsNotConnected = ({ nodes }: ComponentType) => {
+      return Object.keys(nodes).some((nodeKey) => {
+        return !!nodes[nodeKey as keyof typeof nodes].value;
+      });
+    };
+
     this.#nodes = this.#extractNodes(circuitFull);
-    const circuit = circuitFull.filter(removeTools);
+    const circuit = circuitFull
+      .filter(removeTools)
+      .filter(removeComponentsNotConnected);
     this.#netlist = this.#circuitTypeToNetlist(circuit);
     console.log("NETLIST BASE: ", { netlist: this.#netlist });
   }
