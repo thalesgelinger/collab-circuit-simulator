@@ -21,6 +21,7 @@ import { AcComponentForm } from "./AcComponentForm";
 import { formatToSi } from "../../utils/formatToSI";
 import { pointerShape } from "../../utils/pointerShape";
 import { ActionTypes } from "../ActionsToolbar";
+import { useAuth } from "../../hooks/useAuth";
 
 interface DraggableComponentProps {
   size: number;
@@ -167,8 +168,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
       setMeasureValues([]);
     }
 
-    if (isRunning) {
-      console.log("VAI RODAR AQUI");
+    if (isRunning && action === "simulate") {
       getValuesOfConnectedSources();
     }
   }, [isRunning]);
