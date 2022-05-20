@@ -38,24 +38,22 @@ export const Toolbar = forwardRef<ToolbarHandler, ToolbarProps>(
       },
     }));
 
-    return (
-      show && (
-        <Layer draggable={false}>
-          {showTools ? (
-            <Tools
-              onComponentDragStart={onComponentDragStart}
-              onComponentDragMove={onComponentDragMove}
-              onComponentDragEnd={onComponentDragEnd}
-            />
-          ) : (
-            <ComponentsToolbar
-              onComponentDragStart={onComponentDragStart}
-              onComponentDragMove={onComponentDragMove}
-              onComponentDragEnd={onComponentDragEnd}
-            />
-          )}
-        </Layer>
-      )
-    );
+    return show ? (
+      <Layer draggable={false}>
+        {showTools ? (
+          <Tools
+            onComponentDragStart={onComponentDragStart}
+            onComponentDragMove={onComponentDragMove}
+            onComponentDragEnd={onComponentDragEnd}
+          />
+        ) : (
+          <ComponentsToolbar
+            onComponentDragStart={onComponentDragStart}
+            onComponentDragMove={onComponentDragMove}
+            onComponentDragEnd={onComponentDragEnd}
+          />
+        )}
+      </Layer>
+    ) : null;
   }
 );

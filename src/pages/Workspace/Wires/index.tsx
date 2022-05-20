@@ -27,6 +27,7 @@ import { pointerShape } from "../../../utils/pointerShape";
 export interface Wire {
   from: Vector2d;
   to: Vector2d;
+  nodeValue: string;
 }
 
 export interface CooworkerWire {
@@ -40,14 +41,14 @@ interface WiresProps {
   circuitId: string;
   simulation: SimulationState;
   lastEdited: any;
-  onClickWire(index: number): void;
+  onClickWire(wire: Wire): void;
 }
 
 interface WiresHandle {
   wire: Wire;
   setWire: Dispatch<SetStateAction<Wire>>;
-  wires: number[][];
-  setWires: Dispatch<SetStateAction<number[][]>>;
+  wires: Wire[];
+  setWires: Dispatch<SetStateAction<Wire[]>>;
   cooworkerWires: CooworkerWire[];
   setCooworkerWires: Dispatch<SetStateAction<CooworkerWire[]>>;
   points: number[];
@@ -60,7 +61,7 @@ export const Wires = forwardRef<WiresHandle, WiresProps>(
     wireRef
   ) => {
     const [wire, setWire] = useState<Wire>({} as Wire);
-    const [wires, setWires] = useState<number[][]>([]);
+    const [wires, setWires] = useState<Wire[]>([]);
 
     const [cooworkerWires, setCooworkerWires] = useState<CooworkerWire[]>([]);
 
@@ -180,25 +181,30 @@ export const Wires = forwardRef<WiresHandle, WiresProps>(
       return points;
     };
 
-    const points = useMemo(() => {
+    const convertToPoints = (wire: Wire) => {
       const { from, to } = wire;
       const curve = getCurvePoint(from, to);
       const points = buildPoints(from, curve, to);
       return points;
+    };
+
+    const points = useMemo(() => {
+      return convertToPoints(wire);
     }, [wire]);
 
     return (
       <>
-        {wires.map((wirePoints, index) => {
+        {wires.map((wire, index) => {
+          const points = convertToPoints(wire);
           return (
             <Line
               key={index}
-              points={wirePoints}
+              points={points}
               stroke="#000"
               fill="#000"
               strokeWidth={3}
               onClick={() => {
-                onClickWire(index);
+                onClickWire(wire);
               }}
               onMouseOver={pointerShape(action === "edit" ? "copy" : "default")}
               onMouseLeave={pointerShape("default")}
@@ -206,12 +212,15 @@ export const Wires = forwardRef<WiresHandle, WiresProps>(
           );
         })}
         {isConnectingComponents && (
-          <Line points={points} stroke="#000" fill="#000" strokeWidth={3} />
+          <Line
+            points={points}
+            stroke="#5b5b5b"
+            fill="#5b5b5b"
+            strokeWidth={3}
+          />
         )}
         {cooworkerWires.map((wire, index) => {
-          const { from, to } = wire;
-          const curve = getCurvePoint(from, to);
-          const points = buildPoints(from, curve, to);
+          const points = convertToPoints(wire);
           return (
             <Line
               key={index}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, CircuitCard } from "../../components";
 
@@ -17,8 +17,15 @@ export const Dashboard = () => {
   const { user } = useAuth();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const db = getDatabase(app);
+
+  useEffect(() => {
+    if (!user?.uid) {
+      navigate("/", { state: { from: location } });
+    }
+  }, []);
 
   useEffect(() => {
     console.log({ userId: user.uid });

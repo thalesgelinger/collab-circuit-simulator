@@ -68,8 +68,6 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
   const [image] = useImage(componentData!.image);
 
-  const [component, setComponent] = useState(componentData);
-
   const dispatch = useDispatch();
 
   const { simulation, circuit, isRunning, action } = useSelector(
@@ -175,6 +173,18 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
   }, [isRunning]);
 
   const getValuesOfConnectedSources = async () => {
+    if (componentData!.componentType === "osciloscope") {
+      setMeasureValues([
+        ...measureValues,
+        {
+          key: componentData!.id,
+          position: componentData!.position,
+          value: "Click no osciloscópio",
+        },
+      ]);
+      return;
+    }
+
     if (tools.hasOwnProperty(componentData!.componentType)) {
       console.log({ circuit });
       await tools[componentData!.componentType]();
@@ -195,7 +205,6 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
   };
 
   const submitNewLabel = (component: ComponentType) => {
-    setComponent(component);
     const circuitCopy = Array.from(circuit);
     const componentIndex = circuit.findIndex(({ id }) => {
       return id === component.id;
@@ -314,7 +323,7 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
       {!!componentData?.nodes &&
         Object.keys(componentData.nodes).map((nodeKey) => {
           const node = componentData!.nodes[nodeKey];
-
+          console.log({ node });
           return (
             node.value === "" && (
               <Circle
@@ -394,33 +403,34 @@ export const DraggableComponent = (props: DraggableComponentProps) => {
 
       {editingLabel && getForm(componentData!.componentType)}
 
-      {measureValues.map(
-        ({ show, value, position: { x, y } }, i) =>
-          show && (
-            <Html
-              divProps={{
-                style: {
-                  position: "absolute",
-                },
-              }}
-            >
-              <div
-                key={i}
-                style={{
-                  position: "absolute",
-                  top: y,
-                  left: x,
-                  backgroundColor: "#aeaeae",
-                  padding: 20,
-                  borderRadius: 10,
+      {!!measureValues?.length &&
+        measureValues.map(
+          ({ show, value, position }, i) =>
+            show && (
+              <Html
+                divProps={{
+                  style: {
+                    position: "absolute",
+                  },
                 }}
-                draggable
               >
-                <h3>{value}</h3>
-              </div>
-            </Html>
-          )
-      )}
+                <div
+                  key={i}
+                  style={{
+                    position: "absolute",
+                    top: position?.y ?? 0,
+                    left: position?.x ?? 0,
+                    backgroundColor: "#aeaeae",
+                    padding: 20,
+                    borderRadius: 10,
+                  }}
+                  draggable
+                >
+                  <h3>{value}</h3>
+                </div>
+              </Html>
+            )
+        )}
     </>
   );
 };
