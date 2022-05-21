@@ -36,9 +36,15 @@ export const Oscilloscope = () => {
 
   const [dataset, setData] = useState<any[]>([]);
 
-  const { simulation, oscilloscopeData } = useSelector(
+  const { simulation, oscilloscopeData, isRunning } = useSelector(
     (state: RootState) => state.simulation
   );
+
+  useEffect(() => {
+    if (!isRunning) {
+      setData([]);
+    }
+  }, [isRunning]);
 
   useEffect(() => {
     if (!!simulation && !!oscilloscopeData?.length) {

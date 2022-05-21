@@ -459,10 +459,6 @@ export const Workspace = () => {
   const edit = (evt: KonvaEventObject<MouseEvent>) => {
     const { wire, wires, setWire, setWires } = wireRef.current!;
 
-    if (!hasClickedToComponentTerminal(evt)) {
-      console.log("NAO CONECTOU NO COMPONENTE");
-    }
-
     const { x, y } = getPointerPositionByEvent(evt);
     const clickedPosition = snapPosition(x, y);
     let [component, terminal] = clickedComponent(clickedPosition);
@@ -485,7 +481,12 @@ export const Workspace = () => {
       ? wireConnected.nodeValue
       : nodes.toString();
 
-    console.log({ component, terminal, wireConnected });
+    console.log({ wireFrom: wire.from, component, terminal, wire });
+
+    if (!wire.from && !component && !terminal && !wireConnected) {
+      alert("Você não seleciou um componente ou um fio para conectar");
+      return;
+    }
 
     if (!wire.from) {
       setWire({
@@ -547,38 +548,8 @@ export const Workspace = () => {
       return [component, terminal] as const;
     };
 
-    const findComponents = (position: Position) => {
-      const [component, terminal] = clickedComponent(position);
-
-      if (!component) {
-        const starterComponents = circuit.filter((c) => {
-          return Object.keys(c.nodes).some((key) => {
-            return (
-              c.nodes[key as keyof typeof c.nodes].value === wire.nodeValue
-            );
-          });
-        });
-
-        const terminals = starterComponents.map((c) => {
-          Object.keys(c!.nodes).find((nodeKey) => {
-            return (
-              c?.nodes[nodeKey as keyof typeof c.nodes].value === wire.nodeValue
-            );
-          });
-        });
-
-        return [[starterComponents], [terminals]];
-      }
-
-      return [component, terminal] as const;
-    };
-
     if (!!wireConnected) {
       setIntersections([...intersections, clickedPosition]);
-
-      console.log({ circuit, wire });
-
-      // [component, terminal] = findComponents(wire.from);
 
       const hasNodeValueOnCLickedComponent =
         !!nodeValue && Number(wire.nodeValue) > Number(nodeValue);
