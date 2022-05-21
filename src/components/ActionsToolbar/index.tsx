@@ -114,7 +114,7 @@ export const ActionsToolbar = ({
               left: "100%",
             }}
           >
-            Editar
+            Conectar
           </span>
         )}
       </div>
