@@ -15,9 +15,10 @@ O Sistema utiliza da biblioteca spice.
 ![image](https://user-images.githubusercontent.com/55005400/169169359-a456b2ad-ff7f-46bd-93a7-1d8b2510dc10.png)
 
 # Circuit simulation examples
-![image](https://user-images.githubusercontent.com/55005400/169169412-d59e7171-8f92-471d-982f-1be7e5150eb5.png)
-![image](https://user-images.githubusercontent.com/55005400/169169456-1713a7c7-fe36-4b35-8fbd-0567591ae8f3.png)
-![image](https://user-images.githubusercontent.com/55005400/169169522-d34903e9-52db-47d6-88ec-aa39e62859f1.png)
+![image](https://user-images.githubusercontent.com/55005400/170063208-f8aa471a-0f42-40f6-ad1d-7696739096fc.png)
+![image](https://user-images.githubusercontent.com/55005400/170063665-e1fc1819-f6f7-43a6-a239-9156dba3825f.png)
+![image](https://user-images.githubusercontent.com/55005400/170064598-2fca6453-62a2-47fb-b5ac-b38d336416d8.png)
+
 
 # Duvidas?
 Se houver qualquer duvida ou sugestão, por favor abra uma issue no github para ajudar este projeto a crescer.
